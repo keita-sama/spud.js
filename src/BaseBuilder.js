@@ -39,7 +39,7 @@ class BaseBuilder {
         if (!correctType('boolean', bool)) {
             throw new SpudJSError(`Expected "boolean", got ${typeof bool}`);
         }
-        this.shouldMention = bool;
+        this.shouldMention = !bool;
         return this;
     }
 }

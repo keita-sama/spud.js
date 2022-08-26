@@ -122,7 +122,7 @@ class PaginationBuilder extends BaseBuilder {
         let msg;
 
         if (this.shouldMention === true) {
-            msg = await this.message.channel.send({
+            msg = await this.message.reply({
                 embeds: [
                     this._embeds[currentPage],
                 ],
@@ -132,7 +132,7 @@ class PaginationBuilder extends BaseBuilder {
             });
         }
         else if (this.shouldMention === false) {
-            msg = await this.message.channel.send({
+            msg = await this.message.reply({
                 embeds: [
                     this._embeds[currentPage],
                 ],
