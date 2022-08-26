@@ -45,9 +45,9 @@ class MenuBuilder extends BaseBuilder {
      * The initiating function
      */
     async send() {
-        const { filter, max, time, placeholder, _options } = this;
+        const { filter, max, time } = this;
 
-        const options = _options.map(option => {
+        const options = this._options.map(option => {
             return {
                 label: option.label,
                 description: option.description,
@@ -58,7 +58,7 @@ class MenuBuilder extends BaseBuilder {
         });
 
         const menu = new SelectMenuBuilder()
-            .setPlaceholder(placeholder)
+            .setPlaceholder(this.placeholder)
             .addOptions(...options)
             .setCustomId('spud-select');
 
@@ -66,7 +66,7 @@ class MenuBuilder extends BaseBuilder {
 
         if (this.shouldMention === true) {
             msg = await this.message.channel.send({
-                embeds: [_options[0].embed],
+                embeds: [this._options[0].embed],
                 components: [
                     new ActionRowBuilder().addComponents(menu),
                 ],
@@ -74,7 +74,7 @@ class MenuBuilder extends BaseBuilder {
         }
         else if (this.shouldMention === false) {
             msg = await this.message.channel.send({
-                embeds: [_options[0].embed],
+                embeds: [this._options[0].embed],
                 components: [
                     new ActionRowBuilder().addComponents(menu),
                 ],
@@ -83,18 +83,14 @@ class MenuBuilder extends BaseBuilder {
         }
 
 
-        const collector = msg.createMessageComponentCollector({
-            filter,
-            max,
-            time,
-        });
+        const collector = msg.createMessageComponentCollector({ filter, max, time });
 
         collector.on('collect', async (m) => {
             collector.resetTimer();
             const val = m.values[0];
             await m.update({
                 embeds: [
-                    _options.find(option => option.label.toLowerCase().replace(/ /g, '_') === val).embed,
+                    this._options.find(option => option.label.toLowerCase().replace(/ /g, '_') === val).embed,
                 ],
             });
         });

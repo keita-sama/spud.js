@@ -96,6 +96,8 @@ class PaginationBuilder extends BaseBuilder {
      * Handles the entire interaction
      */
     async send() {
+        const { filter, max, time } = this;
+
         const components = [];
         const trash = createButton('trash', '🗑', 'Danger');
         const right = createButton('right', '▶', 'Primary');
@@ -115,7 +117,6 @@ class PaginationBuilder extends BaseBuilder {
         }
 
         let currentPage = 0;
-        const filter = this.filter ?? ((m) => m.user.id === this.message.author.id);
         const len = this._embeds.length - 1;
 
         let msg;
@@ -143,7 +144,7 @@ class PaginationBuilder extends BaseBuilder {
         }
 
 
-        const collector = msg.createMessageComponentCollector({ filter, time: this.time });
+        const collector = msg.createMessageComponentCollector({ filter, time, max });
 
         collector.on('collect', async (i) => {
             if (this.idle === true) {
