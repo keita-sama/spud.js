@@ -13,7 +13,6 @@ class MenuBuilder extends BaseBuilder {
     /**
      * Sets the placeholder text
      * @param {String} placeholder - The text seen on your Select Menu
-     *
      */
     setPlaceholder(placeholder) {
         if (!correctType('string', placeholder)) throw new SpudJSError(`Expected "string", got ${typeof placeholder}`);
@@ -21,15 +20,27 @@ class MenuBuilder extends BaseBuilder {
         return this;
     }
     /**
-     * A getter for your options
+     * Sets the initial options
+     * @param {Array<MenuOption>} options - The options that is initialized with the menu
      */
-    getOptions() {
-        return this._options;
+    setMenuOptions(options) {
+        if (!(options instanceof Array)) {
+            throw new SpudJSError(`Expected "Array", got ${typeof options}`);
+        }
+        else {
+            options.forEach(option => {
+                if (
+                    !(option instanceof MenuOption)
+                    && typeof option !== 'object'
+                ) throw new SpudJSError('Incorrect argument passed, must be either "MenuOption" or "Object"');
+            });
+        }
+        this._options = options;
+        return this;
     }
     /**
      * Adds an option to your select menu
      * @param {Function} input - The function used to generate the option
-     *
      */
     addMenuOption(input) {
         if (!input) throw new SpudJSError('You can\'t pass nothing!');
@@ -42,7 +53,13 @@ class MenuBuilder extends BaseBuilder {
         }
     }
     /**
-     * The initiating function
+     * A getter for the menu's options
+     */
+     getOptions() {
+        return this._options;
+    }
+    /**
+     * Handles the entire interaction
      */
     async send() {
         const { filter, max, time } = this;
@@ -62,25 +79,14 @@ class MenuBuilder extends BaseBuilder {
             .addOptions(...options)
             .setCustomId('spud-select');
 
-        let msg;
-
-        if (this.shouldMention === true) {
-            msg = await this.message.reply({
+        const msg = await this.message.reply({
+                content: this.content,
                 embeds: [this._options[0].embed],
                 components: [
                     new ActionRowBuilder().addComponents(menu),
                 ],
-            });
-        }
-        else if (this.shouldMention === false) {
-            msg = await this.message.reply({
-                embeds: [this._options[0].embed],
-                components: [
-                    new ActionRowBuilder().addComponents(menu),
-                ],
-                allowedMentions: { repliedUser: false },
-            });
-        }
+                allowedMentions: { repliedUser: this.shouldMention },
+        });
 
 
         const collector = msg.createMessageComponentCollector({ filter, max, time });

@@ -10,6 +10,7 @@ class MenuOption {
      *
      */
     setLabel(label) {
+        this.value = label.toLowerCase().replace(/ +/g, '_');
         this.label = label;
         return this;
     }
@@ -37,7 +38,7 @@ class MenuOption {
      *
      */
     setValue(value) {
-        this.value = value ?? this.label.toLowerCase().replace(/ +/g, '_');
+        this.value = value;
         return this;
     }
     /**

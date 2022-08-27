@@ -42,6 +42,7 @@ class PaginationBuilder extends BaseBuilder {
         this._embeds = [];
     }
     /**
+     * Adds a extra button that can be used to end the current pagination
      * @param {Boolean} bin - Determines whether this pagination has a trashbin.
      */
     trashBin(bin) {
@@ -50,6 +51,7 @@ class PaginationBuilder extends BaseBuilder {
         return this;
     }
     /**
+     * Adds fast skipping
      * @param {Boolean} fastSkip - Determines whether this pagination can skip to the first and last pages.
      */
     fastSkip(fastSkip) {
@@ -58,7 +60,8 @@ class PaginationBuilder extends BaseBuilder {
         return this;
     }
     /**
-     * @param {Array<EmbedBuilder>} embeds - The embeds that is initialized with the pagination.
+     * Sets the initial embeds
+     * @param {EmbedBuilder[]} embeds - The embeds that is initialized with the pagination.
      */
     setEmbeds(embeds) {
         if (!(embeds instanceof Array)) {
@@ -76,9 +79,8 @@ class PaginationBuilder extends BaseBuilder {
         return this;
     }
     /**
-     *
+     * Adds an embed
      * @param {EmbedBuilder} embed - The embed to add to this pagination
-     * @returns
      */
     addEmbed(embed) {
         if (!(embed instanceof EmbedBuilder)) throw new SpudJSError(`Expected "EmbedBuilder", got ${typeof embed}`);
@@ -86,7 +88,7 @@ class PaginationBuilder extends BaseBuilder {
         return this;
     }
     /**
-     * A getter for the embed options
+     * A getter for the embed's options
      */
     getEmbeds() {
         if (this._embeds.length === 0) throw new SpudJSError('There is no embeds, Add some using setEmbeds/addEmbed!');
@@ -99,7 +101,7 @@ class PaginationBuilder extends BaseBuilder {
         const { filter, max, time } = this;
 
         const components = [];
-        const trash = createButton('trash', '🗑', 'Danger');
+        const trash = createButton('trash', '⛔', 'Danger');
         const right = createButton('right', '▶', 'Primary');
         const dright = createButton('rightf', '⏭', 'Primary');
         const left = createButton('left', '◀', 'Primary');
@@ -119,30 +121,16 @@ class PaginationBuilder extends BaseBuilder {
         let currentPage = 0;
         const len = this._embeds.length - 1;
 
-        let msg;
-
-        if (this.shouldMention === true) {
-            msg = await this.message.reply({
-                embeds: [
-                    this._embeds[currentPage],
-                ],
-                components: [
-                    checkPage(currentPage, components, len),
-                ],
-            });
-        }
-        else if (this.shouldMention === false) {
-            msg = await this.message.reply({
-                embeds: [
-                    this._embeds[currentPage],
-                ],
-                components: [
-                    checkPage(currentPage, components, len),
-                ],
-                allowedMentions: { repliedUser: false },
-            });
-        }
-
+        const msg = await this.message.reply({
+            content: this.content,
+            embeds: [
+                this._embeds[currentPage],
+            ],
+            components: [
+                checkPage(currentPage, components, len),
+            ],
+            allowedMentions: { repliedUser: this.shouldMention },
+        });
 
         const collector = msg.createMessageComponentCollector({ filter, time, max });
 
