@@ -1,7 +1,4 @@
-import { EmbedBuilder } from "discord.js";
-import BuilderBase from '../BaseBuilder';
-import BuilderPagination from "../PaginationBuilder";
-import BuilderMenu from '../MenuBuilder';
+import { EmbedBuilder } from 'discord.js';
 
 export interface MenuOption {
     label: string;
@@ -12,7 +9,7 @@ export interface MenuOption {
     emoji?: string
 }
 
-export class BaseBuilder extends BuilderBase {
+declare class BaseBuilder {
     constructor(message: string);
 
     disableMention(mention: boolean): this;
@@ -23,23 +20,23 @@ export class BaseBuilder extends BuilderBase {
     setContent(content: string): this;
 }
 
-export class MenuBuilder extends BuilderMenu implements BuilderBase {
+declare class MenuBuilder extends BaseBuilder {
     constructor(message: string);
 
-    setPlaceholder(placeholder: string): this;
-    setMenuOptions(options: MenuOption[] | object): this;
-    addMenuOption(input: Function | MenuOption): this;
+    setPlaceholder(placeholder: string): MenuBuilder;
+    setMenuOptions(options: MenuOption[] | object): MenuBuilder;
+    addMenuOption(input: Function | MenuOption): MenuBuilder;
     getOptions(): MenuOption[];
     send(): void;
 }
 
-export class PaginationBuilder extends BuilderPagination implements BuilderBase {
+declare class PaginationBuilder extends BaseBuilder {
     constructor(message: string);
 
-    trashBin(bin: boolean): this;
-    fastSkip(fastSkip: boolean): this;
-    setEmbeds(embeds: EmbedBuilder[] | object): this;
-    addEmbed(embed: EmbedBuilder | object): this;
+    trashBin(bin: boolean): PaginationBuilder;
+    fastSkip(fastSkip: boolean): PaginationBuilder;
+    setEmbeds(embeds: EmbedBuilder[] | object): PaginationBuilder;
+    addEmbed(embed: EmbedBuilder | object): PaginationBuilder;
     getEmbeds(): EmbedBuilder[];
     send(): void;
 }

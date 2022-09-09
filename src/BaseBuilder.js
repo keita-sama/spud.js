@@ -59,7 +59,7 @@ class BaseBuilder {
         return this;
     }
     /**
-     * @param {Boolean} duration - How long this interaction lasts
+     * @param {Boolean} duration - Determines if this interaction will mention the replied user
      */
     disableMention(mention) {
         if (!correctType('boolean', mention)) {
