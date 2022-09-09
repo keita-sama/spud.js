@@ -24,6 +24,7 @@ new BaseBuilder(message)
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
 | duration | [Number] | How long the interaction lasts. |
+
 returns `BaseBuilder`
 
 ---
@@ -32,6 +33,7 @@ returns `BaseBuilder`
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
 | max | [Number] | Maximum amount of times the interaction can be used. |
+
 returns `BaseBuilder`
 
 ---
@@ -40,6 +42,7 @@ returns `BaseBuilder`
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
 | idle | [Boolean] | Determines if this interaction can idle. |
+
 returns `BaseBuilder`
 
 ---
@@ -48,6 +51,7 @@ returns `BaseBuilder`
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
 | content | [String] | Sets the content used in reply. |
+
 returns `BaseBuilder`
 
 ---
@@ -56,6 +60,7 @@ returns `BaseBuilder`
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
 | mention | [Boolean] | Determines if the reply will mention the user. |
+
 returns `BaseBuilder`
 
 ---

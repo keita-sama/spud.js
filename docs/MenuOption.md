@@ -1,3 +1,4 @@
+
 [String]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String
 
 [Number]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number
@@ -8,6 +9,7 @@
 
 [Array]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
 
+[EmbedBuilder]: https://discord.js.org/docs/#/docs/discord.js/main/class/EmbedBuilder
 
 ## MenuOption
 
@@ -36,6 +38,7 @@ new MenuOption()
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
 | label | [String] | Text used for the label |
+
 returns `MenuOption`
 
 ---
@@ -44,6 +47,7 @@ returns `MenuOption`
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
 | description | [String] | Text used for the description |
+
 returns `MenuOption`
 
 ---
@@ -52,6 +56,7 @@ returns `MenuOption`
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
 | embed | [Embed] | Embed used by this option |
+
 returns `MenuOption`
 
 ---
@@ -60,6 +65,7 @@ returns `MenuOption`
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
 | def | [Boolean] | Determines whether this is the default option |
+
 returns `MenuOption`
 
 ---
@@ -71,6 +77,7 @@ returns `MenuOption`
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
 | value | [EmbedBuilder] | Value used by collectors |
+
 returns `MenuOption`
 
 ---
@@ -80,6 +87,7 @@ returns `MenuOption`
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
 | emoji | [String] | Emoji used by this option |
+
 returns `MenuOption`
 
 ---

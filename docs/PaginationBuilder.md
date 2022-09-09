@@ -1,3 +1,4 @@
+
 [String]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String
 
 [Number]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number
@@ -7,6 +8,8 @@
 [Object]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object
 
 [Array]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
+
+[EmbedBuilder]: https://discord.js.org/docs/#/docs/discord.js/main/class/EmbedBuilder
 
 [BaseBuilder]: ./BaseBuilder.md
 
@@ -26,6 +29,7 @@ new PaginationBuilder(message)
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
 | bin | [Boolean] | Determines wheter this pagination has a trashbin |
+
 returns `PaginationBuilder`
 
 ---
@@ -34,6 +38,7 @@ returns `PaginationBuilder`
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
 | fastSkip | [Boolean] | Determines whether this pagination can skip to the first and last page. |
+
 returns `PaginationBuilder`
 
 ---
@@ -42,6 +47,7 @@ returns `PaginationBuilder`
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
 | embeds | [Array]<[EmbedBuilder]> | Embeds that this pagination is initialized with. |
+
 returns `PaginationBuilder`
 
 ---
@@ -50,11 +56,14 @@ returns `PaginationBuilder`
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
 | embed | [EmbedBuilder] | The embed to add to this pagination |
+
 returns `PaginationBuilder`
 
 ---
 #### getEmbeds()
 Gets all current options.
+
+returns [Array]<[EmbedBuilder]>
 ---
 #### send()
 Handles the interaction

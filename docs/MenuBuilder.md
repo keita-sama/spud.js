@@ -1,8 +1,11 @@
+
 [String]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String
 
 [Object]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object
 
 [Array]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
+
+[EmbedBuilder]: https://discord.js.org/docs/#/docs/discord.js/main/class/EmbedBuilder
 
 [MenuOption]: ./MenuOption.md
 
@@ -24,6 +27,7 @@ new MenuBuilder(message)
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
 | placeholder | [String] | The placeholder text seen |
+
 returns `MenuBuilder`
 
 ---
@@ -32,6 +36,7 @@ returns `MenuBuilder`
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
 | options | [Array]<[MenuOption]> or [Object] | Options initialized with the Select Menu |
+
 returns `MenuBuilder`
 
 ---
@@ -40,6 +45,7 @@ returns `MenuBuilder`
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
 | option | [MenuOption] or [Object] | The placeholder text seen |
+
 returns `MenuBuilder`
 
 ---
