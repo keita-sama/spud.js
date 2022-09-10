@@ -61,9 +61,10 @@ returns `PaginationBuilder`
 
 ---
 #### getEmbeds()
-Gets all current options.
+Gets all embeds used by this pagination.
 
 returns [Array]<[EmbedBuilder]>
+
 ---
 #### send()
 Handles the interaction
