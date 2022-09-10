@@ -2,7 +2,11 @@
 
 The unreleased v3 of spud.js - support for v14!
 
-### Changelog
+### Changelog (Most Recent)
+- added documentation
+
+---
+### Changelog U-1
 
 #### Additions:
 - added `disableMentions` and `setContent`
