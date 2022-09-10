@@ -35,7 +35,7 @@ returns `MenuBuilder`
 
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
-| options | [Array]<[MenuOption]> or [Object] | Options initialized with the Select Menu |
+| options | [Array]<[MenuOption] or [Object]> or  | Options initialized with the Select Menu |
 
 returns `MenuBuilder`
 
@@ -47,6 +47,11 @@ returns `MenuBuilder`
 | option | [MenuOption] or [Object] | The placeholder text seen |
 
 returns `MenuBuilder`
+
+#### getOptions()
+Gets all the options used by this Select Menu
+
+returns [Array]<[MenuOption]>
 
 ---
 #### send()
