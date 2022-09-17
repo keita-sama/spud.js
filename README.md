@@ -33,7 +33,7 @@ client.on('messageCreate', async (message) => {
   }
 })
 ```
-Boom! Everything is done.
+Boom, done.
 
 For all options check out the documentation and join our discord server if you need assistance!
 
