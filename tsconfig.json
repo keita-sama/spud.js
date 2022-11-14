@@ -1,0 +1,8 @@
+{
+    "compilerOptions": {
+        "module": "Node16",
+        "target": "es6",
+        "resolveJsonModule": true,
+        "esModuleInterop": true
+    } 
+}

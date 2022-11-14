@@ -1,9 +1,9 @@
-const { ButtonBuilder, ActionRowBuilder, EmbedBuilder } = require('discord.js');
-const { correctType } = require('./Utils');
-const BaseBuilder = require('./BaseBuilder');
-const SpudJSError = require('./errors/SpudJSError');
+import { ButtonBuilder, ActionRowBuilder, EmbedBuilder, Message } from 'discord.js';
+import { correctType } from './Utils';
+import BaseBuilder from "./BaseBuilder";
+import SpudJSError from './errors/SpudJSError';
 
-function checkPage(cur, components, max) {
+export default function checkPage(cur: any, components: any, max: any) {
     switch (cur) {
         case 0:
             return new ActionRowBuilder().addComponents(...components.map(btn => btn.data.custom_id.startsWith('left') ? btn.setDisabled(true) : btn.setDisabled(false)));
@@ -37,33 +37,33 @@ function createButton(id, emoji, style) {
 }
 
 class PaginationBuilder extends BaseBuilder {
-    constructor (message) {
+	public _embeds: any;
+	public message: any;
+	public content: any;
+	public shouldMention: any;
+	public idle: any;
+	public filter: any;
+	public max: any;
+	public time: any;
+
+    constructor (message: Message) {
         super(message);
         this._embeds = [];
     }
-    /**
-     * Adds a extra button that can be used to end the current pagination
-     * @param {Boolean} bin - Determines whether this pagination has a trashbin.
-     */
-    trashBin(bin) {
+
+    trashBin(bin: boolean) {
         if (!correctType('boolean', bin)) throw new SpudJSError(`Expected "boolean", got ${typeof bin}`);
-        this.trashBin = bin;
+        (this.trashBin as any) = bin;
         return this;
     }
-    /**
-     * Adds fast skipping
-     * @param {Boolean} fastSkip - Determines whether this pagination can skip to the first and last pages.
-     */
-    fastSkip(fastSkip) {
+
+    fastSkip(fastSkip: any) {
         if (!correctType('boolean', fastSkip)) throw new SpudJSError(`Expected "boolean", got ${typeof fastSkip}`);
         this.fastSkip = fastSkip;
         return this;
     }
-    /**
-     * Sets the initial embeds
-     * @param {EmbedBuilder[]} embeds - The embeds that is initialized with the pagination.
-     */
-    setEmbeds(embeds) {
+
+    setEmbeds(embeds: EmbedBuilder[]) {
         if (!(embeds instanceof Array)) {
             throw new SpudJSError(`Expected "Array", got ${typeof embeds}`);
         }
@@ -78,11 +78,8 @@ class PaginationBuilder extends BaseBuilder {
         this._embeds = embeds;
         return this;
     }
-    /**
-     * Adds an embed
-     * @param {EmbedBuilder} embed - The embed to add to this pagination
-     */
-    addEmbed(embed) {
+
+    addEmbed(embed: EmbedBuilder) {
         if (!(embed instanceof EmbedBuilder)) throw new SpudJSError(`Expected "EmbedBuilder", got ${typeof embed}`);
         this._embeds.push(embed);
         return this;
@@ -107,13 +104,13 @@ class PaginationBuilder extends BaseBuilder {
         const left = createButton('left', '◀', 'Primary');
         const dleft = createButton('leftf', '⏮', 'Primary');
 
-        if (this.trashBin === true) {
-            components.push(left, trash, right);
+        if ((this.trashBin as any) === true) {
+            components.push((left as never), (trash as never), (right as never));
         }
         else {
             components.push(left, right);
         }
-        if (this.fastSkip === true) {
+        if ((this.fastSkip as any) === true) {
             components.unshift(dleft);
             components.push(dright);
         }
@@ -157,7 +154,7 @@ class PaginationBuilder extends BaseBuilder {
             if (i.customId === 'trash') {
                 i.update({
                     components: [
-                        new ActionRowBuilder().addComponents(...components.map(btn => btn.setDisabled(true))),
+                        new ActionRowBuilder().addComponents(...components.map((btn: ButtonBuilder) => btn.setDisabled(true))),
                     ],
                 });
                 collector.stop();
@@ -173,5 +170,3 @@ class PaginationBuilder extends BaseBuilder {
         });
     }
 }
-
-module.exports = PaginationBuilder;

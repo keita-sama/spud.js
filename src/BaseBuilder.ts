@@ -1,67 +1,65 @@
-const { correctType } = require('./Utils');
-const SpudJSError = require('./errors/SpudJSError');
+import { Message } from "discord.js";
 
-// @ts-check
+import { correctType } from './Utils';
+import SpudJSError from './errors/SpudJSError';
 
 class BaseBuilder {
-    constructor(message) {
+	public message: any;
+	public shouldMention: any;
+	public time: any;
+	public filter: any;
+	public max: any;
+	public idle: any;
+	public content: any;
+
+    constructor(message: Message) {
         this.message = message;
         this.shouldMention = true;
     }
     /**
      * @param {Number} duration - How long this interaction lasts
      */
-    setTime(duration) {
+    setTime(duration: number) {
         if (!correctType('number', duration)) {
             throw new SpudJSError(`Expected "number", got ${typeof duration}`);
         }
         this.time = duration;
         return this;
     }
-    /**
-     * @param {Function} filter - How long this interaction lasts
-     */
-    setFilter(filter) {
+
+    setFilter(filter: Function) {
         if (!correctType('function', filter)) {
             throw new SpudJSError(`Expected "function", got ${typeof filter}`);
         }
         this.filter = filter;
         return this;
     }
-    /**
-     * @param {Number} max - How many times this interaction can be used
-     */
-    setMax(max) {
+
+    setMax(max: number) {
         if (!correctType('number', max)) {
             throw new SpudJSError(`Expected "number", got ${typeof max}`);
         }
         this.max = max;
         return this;
     }
-    /**
-     * @param {Boolean} idle - Determines if this interaction can idle
-     */
-    setIdle(idle) {
+
+    setIdle(idle: boolean) {
         if (!correctType('boolean', idle)) {
             throw new SpudJSError(`Expected "boolean", got ${typeof idle}`);
         }
         this.idle = idle;
         return this;
     }
-    /**
-     * @param {String} content - Sets the content used in the reply.
-     */
-    setContent(content) {
+
+    setContent(content: string) {
         if (!correctType('string', content)) {
-            throw new SpudJSError(`Expected "string", got ${typeof idle}`);
+            throw new SpudJSError(`Expected "string", got ${typeof this.idle}`);
         }
         this.content = content;
         return this;
     }
-    /**
-     * @param {Boolean} duration - Determines if this interaction will mention the replied user
-     */
-    disableMention(mention) {
+
+    disableMention(mention: boolean) {
         if (!correctType('boolean', mention)) {
             throw new SpudJSError(`Expected "boolean", got ${typeof mention}`);
         }
@@ -70,4 +68,4 @@ class BaseBuilder {
     }
 }
 
-module.exports = BaseBuilder;
+export default BaseBuilder;

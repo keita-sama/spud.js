@@ -1,29 +1,31 @@
-const { correctType } = require('./Utils');
-const { SelectMenuBuilder, ActionRowBuilder } = require('discord.js');
-const MenuOption = require('./options/MenuOption');
-const BaseBuilder = require('./BaseBuilder');
-const SpudJSError = require('./errors/SpudJSError');
+import { correctType } from './Utils';
+import { SelectMenuBuilder, ActionRowBuilder, Message } from 'discord.js';
+import MenuOption from './options/MenuOption';
+import BaseBuilder from './BaseBuilder';
+import SpudJSError from './errors/SpudJSError';
 
-class MenuBuilder extends BaseBuilder {
-    constructor(message) {
+export default class MenuBuilder extends BaseBuilder {
+    public _options: any;
+    public placeholder: any;
+    public message: any;
+    public content: any;
+    public shouldMention: any;
+    public filter: any;
+    public max: any;
+    public time: any;
+
+    constructor(message: Message) {
         super(message);
         this._options = [];
     }
 
-    /**
-     * Sets the placeholder text
-     * @param {String} placeholder - The text seen on your Select Menu
-     */
-    setPlaceholder(placeholder) {
+    setPlaceholder(placeholder: String) {
         if (!correctType('string', placeholder)) throw new SpudJSError(`Expected "string", got ${typeof placeholder}`);
         this.placeholder = placeholder;
         return this;
     }
-    /**
-     * Sets the initial options
-     * @param {Array<MenuOption>} options - The options that is initialized with the menu
-     */
-    setMenuOptions(options) {
+
+    setMenuOptions(options: Array<MenuOption>) {
         if (!(options instanceof Array)) {
             throw new SpudJSError(`Expected "Array", got ${typeof options}`);
         }
@@ -38,11 +40,8 @@ class MenuBuilder extends BaseBuilder {
         this._options = options;
         return this;
     }
-    /**
-     * Adds an option to your select menu
-     * @param {Function} input - The function used to generate the option
-     */
-    addMenuOption(input) {
+
+    addMenuOption(input: Function | any) {
         if (!input) throw new SpudJSError('You can\'t pass nothing!');
         if (typeof input === 'function') {
             this._options.push(input(new MenuOption()));
@@ -52,19 +51,15 @@ class MenuBuilder extends BaseBuilder {
             this._options.push(input);
         }
     }
-    /**
-     * A getter for the menu's options
-     */
-     getOptions() {
+
+    getOptions() {
         return this._options;
     }
-    /**
-     * Handles the entire interaction
-     */
+
     async send() {
         const { filter, max, time } = this;
 
-        const options = this._options.map(option => {
+        const options = this._options.map((option: any) => {
             return {
                 label: option.label,
                 description: option.description,
@@ -74,29 +69,29 @@ class MenuBuilder extends BaseBuilder {
             };
         });
 
-        const menu = new SelectMenuBuilder()
+        const menu: SelectMenuBuilder = new SelectMenuBuilder()
             .setPlaceholder(this.placeholder)
             .addOptions(...options)
             .setCustomId('spud-select');
 
         const msg = await this.message.reply({
-                content: this.content,
-                embeds: [this._options[0].embed],
-                components: [
-                    new ActionRowBuilder().addComponents(menu),
-                ],
-                allowedMentions: { repliedUser: this.shouldMention },
+            content: this.content,
+            embeds: [this._options[0].embed],
+            components: [
+                new ActionRowBuilder().addComponents(menu),
+            ],
+            allowedMentions: { repliedUser: this.shouldMention },
         });
 
 
         const collector = msg.createMessageComponentCollector({ filter, max, time });
 
-        collector.on('collect', async (m) => {
+        collector.on('collect', async (m: any) => {
             collector.resetTimer();
             const val = m.values[0];
             await m.update({
                 embeds: [
-                    this._options.find(option => option.label.toLowerCase().replace(/ /g, '_') === val).embed,
+                    this._options.find((option: any) => option.label.toLowerCase().replace(/ /g, '_') === val).embed,
                 ],
             });
         });
@@ -110,5 +105,3 @@ class MenuBuilder extends BaseBuilder {
         });
     }
 }
-
-module.exports = MenuBuilder;
