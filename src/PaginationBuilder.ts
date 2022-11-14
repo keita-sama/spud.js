@@ -3,7 +3,7 @@ import { correctType } from './Utils';
 import BaseBuilder from "./BaseBuilder";
 import SpudJSError from './errors/SpudJSError';
 
-export default function checkPage(cur, components, max) {
+export default function checkPage(cur: any, components: any, max: any) {
     switch (cur) {
         case 0:
             return new ActionRowBuilder().addComponents(...components.map(btn => btn.data.custom_id.startsWith('left') ? btn.setDisabled(true) : btn.setDisabled(false)));
