@@ -1,9 +1,7 @@
-class SpudJSError extends Error {
-    /**
-     * 
-     * @param {String} message - Error message
-     */
-    constructor(message) {
+export default class SpudJSError extends Error {
+	public name: any;
+
+    constructor(message: string) {
         super(message);
         Object.setPrototypeOf(this, new.target.prototype);
 
@@ -14,5 +12,3 @@ class SpudJSError extends Error {
         }
     }
 };
-
-module.exports = SpudJSError;

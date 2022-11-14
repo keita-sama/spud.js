@@ -1,17 +1,18 @@
 {
   "name": "spud.js",
   "version": "3.0.0-dev",
-  "main": "index.js",
+  "main": "src/index.ts",
   "types": "./src/types/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "ts-node ."
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "description": "",
+  "license": "MIT",
+  "description": "A simplified, a next-level spud.js beta.",
   "dependencies": {
-    "discord.js": "^14.3.0"
+    "discord.js": "^14.6.0",
+    "ts-node": "^10.9.1"
   },
   "devDependencies": {
     "eslint": "^8.22.0"
