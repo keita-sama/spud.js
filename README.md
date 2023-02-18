@@ -38,3 +38,5 @@ Boom, done.
 For all options check out the documentation and join our discord server if you need assistance!
 
 ##### Relevant links: [Documentation](./docs) | [Discord Server]()
+
+riley is cool
