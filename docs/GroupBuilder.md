@@ -13,13 +13,16 @@
 
 [Builder]: ./Builder.md
 
-## PaginationBuilder
+## GroupBuilder
 
-`PaginationBuilder` *extends* [`Builder`][Builder]
+`GroupBuilder` *extends* [`Builder`][Builder]
+
+GroupBuilder is essentially a mixture of Pagination and MenuBuilder.
+The `Menu` lets you choose the group and you have `Pagination` to page through the contents of the group.
 
 ### Constructor
 ```js
-new PaginationBuilder(message)
+new GroupBuilder(message)
 ```
 
 ### Methods
@@ -28,42 +31,27 @@ new PaginationBuilder(message)
 
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
-| bin | [Boolean] | Determines wheter this pagination has a trashbin |
+| bin | [Boolean] | Determines wheter this group instance has a trashbin |
 
-returns `PaginationBuilder`
+returns `GroupBuilder`
 
 ---
 #### fastSkip([fastSkip]())
 
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
-| fastSkip | [Boolean] | Determines whether this pagination can skip to the first and last page. |
+| fastSkip | [Boolean] | Determines whether this group instance can skip to the first and last page. |
 
-returns `PaginationBuilder`
+returns `GroupBuilder`
 
 ---
-#### setEmbeds([embeds]())
+#### setGroups([embeds]())
 
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
-| embeds | [Array]<[EmbedBuilder]> | Embeds that this pagination is initialized with. |
+| embeds | [GroupOptions] | Groups that this group instance is initialized with. |
 
-returns `PaginationBuil
-
----
-#### addEmbeds([embed]())
-
-| PARAMETER | TYPE | DESCRIPTION |
-|:-:|:-:|:-:|
-| embed | [EmbedBuilder] | The embed to add to this pagination |
-
-returns `PaginationBuilder`
-
----
-#### getEmbeds()
-Gets all embeds used by this pagination.
-
-returns [Array]<[EmbedBuilder]>
+returns `GroupBuilder`
 
 ---
 #### send()

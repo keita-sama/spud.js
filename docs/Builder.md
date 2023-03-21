@@ -8,13 +8,13 @@
 
 [Array]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
 
-## BaseBuilder
+## Builder
 
 ⚠ This class is not usable!
 
 ### Constructor
 ```js
-new BaseBuilder(message)
+new Builder(interactionType)
 ```
 
 ### Methods
@@ -25,7 +25,7 @@ new BaseBuilder(message)
 |:-:|:-:|:-:|
 | duration | [Number] | How long the interaction lasts. |
 
-returns `BaseBuilder`
+returns `Builder`
 
 ---
 #### setMax([max]())
@@ -34,7 +34,7 @@ returns `BaseBuilder`
 |:-:|:-:|:-:|
 | max | [Number] | Maximum amount of times the interaction can be used. |
 
-returns `BaseBuilder`
+returns `Builder`
 
 ---
 #### setIdle([idle]())
@@ -43,7 +43,7 @@ returns `BaseBuilder`
 |:-:|:-:|:-:|
 | idle | [Boolean] | Determines if this interaction can idle. |
 
-returns `BaseBuilder`
+returns `Builder`
 
 ---
 #### setContent([content]())
@@ -52,7 +52,7 @@ returns `BaseBuilder`
 |:-:|:-:|:-:|
 | content | [String] | Sets the content used in reply. |
 
-returns `BaseBuilder`
+returns `Builder`
 
 ---
 #### disableMention([mention]())
@@ -61,7 +61,15 @@ returns `BaseBuilder`
 |:-:|:-:|:-:|
 | mention | [Boolean] | Determines if the reply will mention the user. |
 
-returns `BaseBuilder`
+returns `Builder`
 
 ---
+#### setInteraction([]())
 
+| PARAMETER | TYPE | DESCRIPTION |
+|:-:|:-:|:-:|
+| mention | [Boolean] | Determines if the reply will mention the user. |
+
+returns `Builder`
+
+---

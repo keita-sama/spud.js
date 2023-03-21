@@ -9,11 +9,11 @@
 
 [MenuOption]: ./MenuOption.md
 
-[BaseBuilder]: ./BaseBuilder.md
+[Builder]: ./Builder.md
 
 ## MenuBuilder
 
-`MenuBuilder` *extends* [`BaseBuilder`][BaseBuilder]
+`MenuBuilder` *extends* [`Builder`][Builder]
 
 ### Constructor
 ```js

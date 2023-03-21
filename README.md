@@ -7,7 +7,7 @@
  
 ### Installation
 ```
-npm install spud.js@3.0.0-dev
+npm install spud.js@3.0.0
 ```
 and then import it into your project:
 ```js
@@ -37,4 +37,4 @@ Boom, done.
 
 For all options check out the documentation and join our discord server if you need assistance!
 
-##### Relevant links: [Documentation](./docs) | [Discord Server]()
+##### Relevant links: [Documentation](https://spud.js.org/#docs) | [Discord Server](https://discord.gg/EsfbnxTdej)

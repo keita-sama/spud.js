@@ -1,5 +1,7 @@
 import { EmbedBuilder } from 'discord.js';
 
+type PaginationButtons = 'next' | 'previous' | 'last' | 'first' | 'trash'
+
 export interface MenuOption {
     label: string;
     value: string;
@@ -9,7 +11,7 @@ export interface MenuOption {
     emoji?: string
 }
 
-declare class BaseBuilder {
+declare class Builder {
     constructor(message: string);
 
     disableMention(mention: boolean): this;
@@ -20,7 +22,7 @@ declare class BaseBuilder {
     setContent(content: string): this;
 }
 
-declare class MenuBuilder extends BaseBuilder {
+declare class MenuBuilder extends Builder {
     constructor(message: string);
 
     setPlaceholder(placeholder: string): MenuBuilder;
@@ -30,7 +32,7 @@ declare class MenuBuilder extends BaseBuilder {
     send(): void;
 }
 
-declare class PaginationBuilder extends BaseBuilder {
+declare class PaginationBuilder extends Builder {
     constructor(message: string);
 
     trashBin(bin: boolean): PaginationBuilder;
@@ -38,5 +40,6 @@ declare class PaginationBuilder extends BaseBuilder {
     setEmbeds(embeds: EmbedBuilder[] | object): PaginationBuilder;
     addEmbed(embed: EmbedBuilder | object): PaginationBuilder;
     getEmbeds(): EmbedBuilder[];
+    setButton(button: PaginationButtons, updated: Function): PaginationBuilder;
     send(): void;
 }

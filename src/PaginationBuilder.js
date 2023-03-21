@@ -1,7 +1,16 @@
 const { ButtonBuilder, ActionRowBuilder, EmbedBuilder } = require('discord.js');
 const { correctType } = require('./Utils');
-const BaseBuilder = require('./BaseBuilder');
+const Builder = require('./Builder');
 const SpudJSError = require('./errors/SpudJSError');
+const allowedButtonsNames = ['first', 'last', 'right', 'left', 'trash'];
+
+function createButton(id, emoji, style) {
+    return new ButtonBuilder()
+        .setCustomId(id)
+        .setEmoji(emoji)
+        .setStyle(style);
+}
+
 
 function checkPage(cur, components, max) {
     switch (cur) {
@@ -29,17 +38,17 @@ function update(interaction, embedArr, cur, row) {
     });
 }
 
-function createButton(id, emoji, style) {
-    return new ButtonBuilder()
-        .setCustomId(id)
-        .setEmoji(emoji)
-        .setStyle(style);
-}
-
-class PaginationBuilder extends BaseBuilder {
-    constructor (message) {
+class PaginationBuilder extends Builder {
+    constructor(message) {
         super(message);
         this._embeds = [];
+        this.buttons = {
+            trash: createButton('trash', '⛔', 'Danger'),
+            right: createButton('right', '▶', 'Primary'),
+            last: createButton('right-fast', '⏭', 'Primary'),
+            left: createButton('left', '◀', 'Primary'),
+            first: createButton('left-fast', '⏮', 'Primary'),
+        };
     }
     /**
      * Adds a extra button that can be used to end the current pagination
@@ -94,6 +103,21 @@ class PaginationBuilder extends BaseBuilder {
         if (this._embeds.length === 0) throw new SpudJSError('There is no embeds, Add some using setEmbeds/addEmbed!');
         return this._embeds;
     }
+    editButton(name, style) {
+        // console.log(this.buttons, this.buttons[name])
+        if (!allowedButtonsNames.some(x => x === name)) throw new SpudJSError('You didn\'t provide a valid button to edit!');
+        if (!style || !(style instanceof Object) && !(style instanceof ButtonBuilder)) throw new SpudJSError('"style" argument has been passed incorrectly!');
+
+        if (!['style', 'emoji', 'label'].some(x => x in style)) throw new SpudJSError('Invalid parameters given! Make sure you pass your style with one of the following properties "emoji", "style", "label"');
+
+        for (const props in style) {
+            if (['style', 'emoji', 'label'].some(x => x === props)) {
+                this.buttons[name].data[props] = style[props];
+            }
+        }
+
+        return this;
+    }
     /**
      * Handles the entire interaction
      */
@@ -101,36 +125,48 @@ class PaginationBuilder extends BaseBuilder {
         const { filter, max, time } = this;
 
         const components = [];
-        const trash = createButton('trash', '⛔', 'Danger');
-        const right = createButton('right', '▶', 'Primary');
-        const dright = createButton('rightf', '⏭', 'Primary');
-        const left = createButton('left', '◀', 'Primary');
-        const dleft = createButton('leftf', '⏮', 'Primary');
 
         if (this.trashBin === true) {
-            components.push(left, trash, right);
+            components.push(this.buttons.left, this.buttons.trash, this.buttons.right);
         }
         else {
-            components.push(left, right);
+            components.push(this.buttons.left, this.buttons.right);
         }
         if (this.fastSkip === true) {
-            components.unshift(dleft);
-            components.push(dright);
+            components.unshift(this.buttons.first);
+            components.push(this.buttons.last);
         }
+
 
         let currentPage = 0;
         const len = this._embeds.length - 1;
 
-        const msg = await this.message.reply({
-            content: this.content,
-            embeds: [
-                this._embeds[currentPage],
-            ],
-            components: [
-                checkPage(currentPage, components, len),
-            ],
-            allowedMentions: { repliedUser: this.shouldMention },
-        });
+        let msg;
+
+        if (!this.interaction) {
+            msg = await this.commandType.reply({
+                content: this.content,
+                embeds: [
+                    this._embeds[currentPage],
+                ],
+                components: [
+                    checkPage(currentPage, components, len),
+                ],
+                allowedMentions: { repliedUser: this.shouldMention },
+            });
+        }
+        else {
+            msg = await this.commandType[this.interactionOptions.type]({
+                content: this.content,
+                embeds: [
+                    this._embeds[currentPage],
+                ],
+                components: [
+                    checkPage(currentPage, components, len),
+                ],
+            });
+        }
+
 
         const collector = msg.createMessageComponentCollector({ filter, time, max });
 
@@ -142,19 +178,19 @@ class PaginationBuilder extends BaseBuilder {
                 currentPage++;
                 update(i, this._embeds, currentPage, checkPage(currentPage, components, len));
             }
-            if (i.customId === 'left') {
+            else if (i.customId === 'left') {
                 currentPage--;
                 update(i, this._embeds, currentPage, checkPage(currentPage, components, len));
             }
-            if (i.customId === 'rightf') {
+            else if (i.customId === 'right-fast') {
                 currentPage = len;
                 update(i, this._embeds, currentPage, checkPage(currentPage, components, len));
             }
-            if (i.customId === 'leftf') {
+            else if (i.customId === 'left-fast') {
                 currentPage = 0;
                 update(i, this._embeds, currentPage, checkPage(currentPage, components, len));
             }
-            if (i.customId === 'trash') {
+            else if (i.customId === 'trash') {
                 i.update({
                     components: [
                         new ActionRowBuilder().addComponents(...components.map(btn => btn.setDisabled(true))),
@@ -165,11 +201,20 @@ class PaginationBuilder extends BaseBuilder {
         });
 
         collector.on('end', () => {
-            msg.edit({
-                components: [
-                    checkPage('none', components, len),
-                ],
-            });
+            if (!this.interaction) {
+                msg.edit({
+                        components: [
+                            checkPage('none', components, len),
+                    ],
+                });
+            }
+            else {
+                this.commandType.editReply({
+                        components: [
+                            checkPage('none', components, len),
+                    ],
+                });
+            }
         });
     }
 }

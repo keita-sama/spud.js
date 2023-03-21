@@ -1,6 +1,5 @@
 class SpudJSError extends Error {
     /**
-     * 
      * @param {String} message - Error message
      */
     constructor(message) {
@@ -13,6 +12,6 @@ class SpudJSError extends Error {
             Error.captureStackTrace(this, this.constructor);
         }
     }
-};
+}
 
 module.exports = SpudJSError;

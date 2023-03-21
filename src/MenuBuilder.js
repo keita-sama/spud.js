@@ -1,12 +1,13 @@
 const { correctType } = require('./Utils');
 const { SelectMenuBuilder, ActionRowBuilder } = require('discord.js');
 const MenuOption = require('./options/MenuOption');
-const BaseBuilder = require('./BaseBuilder');
+const Builder = require('./Builder');
 const SpudJSError = require('./errors/SpudJSError');
 
-class MenuBuilder extends BaseBuilder {
-    constructor(message) {
-        super(message);
+class MenuBuilder extends Builder {
+    constructor(commandType) {
+        console.log(commandType);
+        super(commandType);
         this._options = [];
     }
 
@@ -55,7 +56,7 @@ class MenuBuilder extends BaseBuilder {
     /**
      * A getter for the menu's options
      */
-     getOptions() {
+    getOptions() {
         return this._options;
     }
     /**
@@ -79,14 +80,27 @@ class MenuBuilder extends BaseBuilder {
             .addOptions(...options)
             .setCustomId('spud-select');
 
-        const msg = await this.message.reply({
+        let msg;
+
+        if (!this.interaction) {
+            msg = await this.commandType.reply({
                 content: this.content,
                 embeds: [this._options[0].embed],
                 components: [
                     new ActionRowBuilder().addComponents(menu),
                 ],
                 allowedMentions: { repliedUser: this.shouldMention },
-        });
+            });
+        }
+        else {
+            msg = await this.commandType[this.interactionOptions.type]({
+                content: this.content,
+                embeds: [this._options[0].embed],
+                components: [
+                    new ActionRowBuilder().addComponents(menu),
+                ],
+            });
+        }
 
 
         const collector = msg.createMessageComponentCollector({ filter, max, time });
@@ -102,11 +116,20 @@ class MenuBuilder extends BaseBuilder {
         });
 
         collector.on('end', () => {
-            msg.edit({
-                components: [
-                    new ActionRowBuilder().addComponents(menu.setPlaceholder('Expired').setDisabled(true)),
-                ],
-            });
+            if (!this.interaction) {
+                msg.edit({
+                        components: [
+                             new ActionRowBuilder().addComponents(menu.setPlaceholder('Expired').setDisabled(true)),
+                    ],
+                });
+            }
+            else {
+                this.commandType.editReply({
+                        components: [
+                             new ActionRowBuilder().addComponents(menu.setPlaceholder('Expired').setDisabled(true)),
+                    ],
+                });
+            }
         });
     }
 }
