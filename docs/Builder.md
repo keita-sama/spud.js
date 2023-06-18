@@ -64,11 +64,11 @@ returns `Builder`
 returns `Builder`
 
 ---
-#### setInteraction([]())
+#### setInteraction([options]() = { type: 'reply' })
 
 | PARAMETER | TYPE | DESCRIPTION |
 |:-:|:-:|:-:|
-| mention | [Boolean] | Determines if the reply will mention the user. |
+| mention | [Object] | Set the method used for the interaction |
 
 returns `Builder`
 
