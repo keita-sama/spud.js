@@ -1,76 +1,58 @@
-const { ButtonBuilder, ActionRowBuilder, EmbedBuilder } = require('discord.js');
-const { correctType } = require('./Utils');
+const { ButtonBuilder, ActionRowBuilder, EmbedBuilder, CommandInteraction } = require('discord.js');
 const Builder = require('./Builder');
 const SpudJSError = require('./errors/SpudJSError');
-const allowedButtonsNames = ['first', 'last', 'right', 'left', 'trash'];
 
-function createButton(id, emoji, style) {
-    return new ButtonBuilder()
-        .setCustomId(id)
-        .setEmoji(emoji)
-        .setStyle(style);
-}
+const stylesMap = {
+    'Primary': 1,
+    'Secondary': 2,
+    'Danger': 4,
+    'Sucess': 3,
+};
 
-
-function checkPage(cur, components, max) {
-    switch (cur) {
-        case 0:
-            return new ActionRowBuilder().addComponents(...components.map(btn => btn.data.custom_id.startsWith('left') ? btn.setDisabled(true) : btn.setDisabled(false)));
-        case max:
-            return new ActionRowBuilder().addComponents(...components.map(btn => btn.data.custom_id.startsWith('right') ? btn.setDisabled(true) : btn.setDisabled(false)));
-        case 'none':
-            return new ActionRowBuilder().addComponents(...components.map(btn => btn.setDisabled(true)));
-        case 'all':
-            return new ActionRowBuilder().addComponents(...components.map(btn => btn.setDisabled(false)));
-        default:
-            return new ActionRowBuilder().addComponents(...components.map(btn => btn.setDisabled(false)));
-    }
-}
-
-function update(interaction, embedArr, cur, row) {
-    return interaction.update({
-        embeds: [
-            embedArr[cur],
-        ],
-        components: [
-            row,
-        ],
-    });
-}
+const paginationButtonMap = {
+    'first': 'left-fast',
+    'previous': 'left',
+    'next': 'right',
+    'last': 'right-fast',
+    'trash': 'trash' // This is lazy I know;
+};
 
 class PaginationBuilder extends Builder {
-    constructor(message) {
-        super(message);
+    constructor(input) {
+        super(input);
         this._embeds = [];
         this.buttons = {
-            trash: createButton('trash', '⛔', 'Danger'),
-            right: createButton('right', '▶', 'Primary'),
-            last: createButton('right-fast', '⏭', 'Primary'),
-            left: createButton('left', '◀', 'Primary'),
-            first: createButton('left-fast', '⏮', 'Primary'),
+            trash: new ButtonBuilder().setCustomId('trash').setEmoji('🗑').setStyle('Danger'), // createButton('trash', '⛔', 'Danger'),
+            right: new ButtonBuilder().setCustomId('right').setEmoji('▶').setStyle('Primary'), //  createButton('right', '▶', 'Primary'),
+            last: new ButtonBuilder().setCustomId('right-fast').setEmoji('⏩').setStyle('Primary'), //  createButton('right-fast', '⏭', 'Primary'),
+            left: new ButtonBuilder().setCustomId('left').setEmoji('◀').setStyle('Primary').setDisabled(true), //  createButton('left', '◀', 'Primary'),
+            first: new ButtonBuilder().setCustomId('left-fast').setEmoji('⏪').setStyle('Primary').setDisabled(true), //  createButton('left-fast', '⏮', 'Primary'),
         };
+        this.len = this.getLength();
+        this.currentPage = 0;
+        this.allowedEditButtonNames = ['previous', 'next'];
     }
     /**
-     * Adds a extra button that can be used to end the current pagination
-     * @param {Boolean} bin - Determines whether this pagination has a trashbin.
+     * @param {Boolean} trashBin - Determines whether this pagination has a button to end it.
      */
-    trashBin(bin) {
-        if (!correctType('boolean', bin)) throw new SpudJSError(`Expected "boolean", got ${typeof bin}`);
-        this.trashBin = bin;
+    trashBin(trashBin = false) {
+        this.trashBin = trashBin;
+        this.allowedEditButtonNames.push('trash');
         return this;
     }
     /**
      * Adds fast skipping
      * @param {Boolean} fastSkip - Determines whether this pagination can skip to the first and last pages.
      */
-    fastSkip(fastSkip) {
-        if (!correctType('boolean', fastSkip)) throw new SpudJSError(`Expected "boolean", got ${typeof fastSkip}`);
+    fastSkip(fastSkip = false) {
         this.fastSkip = fastSkip;
+        this.allowedEditButtonNames.push('last');
+        this.allowedEditButtonNames.push('first');
         return this;
     }
     /**
      * Sets the initial embeds
-     * @param {EmbedBuilder[]} embeds - The embeds that is initialized with the pagination.
+     * @param {Array<EmbedBuilder>} embeds - The embeds that is initialized with the pagination.
      */
     setEmbeds(embeds) {
         if (!(embeds instanceof Array)) {
@@ -89,7 +71,7 @@ class PaginationBuilder extends Builder {
     }
     /**
      * Adds an embed
-     * @param {EmbedBuilder} embed - The embed to add to this pagination
+     * @param {EmbedBuilder} embed - Appends an embed to this instance of pagination
      */
     addEmbed(embed) {
         if (!(embed instanceof EmbedBuilder)) throw new SpudJSError(`Expected "EmbedBuilder", got ${typeof embed}`);
@@ -97,125 +79,174 @@ class PaginationBuilder extends Builder {
         return this;
     }
     /**
-     * A getter for the embed's options
+     * A getter for the embeds.
+     * @returns {Array<Embeds>}
      */
     getEmbeds() {
-        if (this._embeds.length === 0) throw new SpudJSError('There is no embeds, Add some using setEmbeds/addEmbed!');
+        if (this._embeds.length === 0) throw new SpudJSError('There is no embeds, add some using setEmbeds/addEmbed!');
         return this._embeds;
     }
+    /**
+     * 
+     * @param {String} name - The name of the button you want to edit.
+     * @param {Object | ButtonBuilder} style - The Button/Style the pagination will make use of.
+     */
     editButton(name, style) {
-        // console.log(this.buttons, this.buttons[name])
-        if (!allowedButtonsNames.some(x => x === name)) throw new SpudJSError('You didn\'t provide a valid button to edit!');
+        if (!this.allowedEditButtonNames.some(x => x === name)) throw new SpudJSError('You didn\'t provide a valid button to edit! (MAKE SURE THE BUTTON NAMES YOU\'RE USING ARE ENABLED!)');
         if (!style || !(style instanceof Object) && !(style instanceof ButtonBuilder)) throw new SpudJSError('"style" argument has been passed incorrectly!');
-
         if (!['style', 'emoji', 'label'].some(x => x in style)) throw new SpudJSError('Invalid parameters given! Make sure you pass your style with one of the following properties "emoji", "style", "label"');
+        const button = this.buttons[paginationButtonMap[name]];
 
-        for (const props in style) {
-            if (['style', 'emoji', 'label'].some(x => x === props)) {
-                this.buttons[name].data[props] = style[props];
+        if (style instanceof ButtonBuilder) {
+            // Override button if one was provided;
+            this.button[paginationButtonMap[name]] = style;
+        }
+        else {
+            if ('style' in style) {
+                button.setStyle(typeof style['style'] === 'number' ? style['style'] : stylesMap[style['style']]);
+            }
+            if ('emoji' in style) {
+                button.setEmoji(style['emoji']);
+            }
+            if ('label' in style) {
+                button.setLabel(style['label']);
             }
         }
-
+        // console.log(this.buttons[name].data);
         return this;
     }
     /**
      * Handles the entire interaction
      */
-    async send() {
+    async send(callback) {
         const { filter, max, time } = this;
 
-        const components = [];
+        const navigation = new ActionRowBuilder();
 
         if (this.trashBin === true) {
-            components.push(this.buttons.left, this.buttons.trash, this.buttons.right);
+            navigation.components.push(this.buttons.left, this.buttons.trash, this.buttons.right);
         }
         else {
-            components.push(this.buttons.left, this.buttons.right);
+            navigation.components.push(this.buttons.left, this.buttons.right);
         }
         if (this.fastSkip === true) {
-            components.unshift(this.buttons.first);
-            components.push(this.buttons.last);
+            navigation.components.unshift(this.buttons.first);
+            navigation.components.push(this.buttons.last);
         }
 
+        this.currentPage = 0;
+        let totalPages = this.getLength();
 
-        let currentPage = 0;
-        const len = this._embeds.length - 1;
-
+        // Initialise the message variable (Will be used for collector)
         let msg;
 
         if (!this.interaction) {
             msg = await this.commandType.reply({
                 content: this.content,
-                embeds: [
-                    this._embeds[currentPage],
-                ],
-                components: [
-                    checkPage(currentPage, components, len),
-                ],
+                embeds: [this._embeds[this.currentPage]],
+                components: [navigation],
                 allowedMentions: { repliedUser: this.shouldMention },
             });
         }
         else {
             msg = await this.commandType[this.interactionOptions.type]({
                 content: this.content,
-                embeds: [
-                    this._embeds[currentPage],
-                ],
-                components: [
-                    checkPage(currentPage, components, len),
-                ],
+                embeds: [this._embeds[this.currentPage]],
+                components: [navigation],
             });
         }
 
 
-        const collector = msg.createMessageComponentCollector({ filter, time, max });
+        const collector = msg.createMessageComponentCollector({ time, max, filter });
+        const userPropName = this.interaction === true ? 'user' : 'author';
 
         collector.on('collect', async (i) => {
+            if (callback) {
+                const resultOfCallback = callback(i, this, collector);
+                // Allows callbacks to also skip pagination execution
+                if (resultOfCallback === 'RETURN') { 
+                    return;
+                }
+            }
+            // Update pagination length - allows embeds to dynamically be updated.
+            totalPages = this.getLength();
+            // console.log(this._embeds); FOR DEBUG PURPOSES
             if (this.idle === true) {
-                collector.resetTimer();
+                await collector.resetTimer();
             }
             if (i.customId === 'right') {
-                currentPage++;
-                update(i, this._embeds, currentPage, checkPage(currentPage, components, len));
+                this.currentPage++;
+                if (this.currentPage >= totalPages) {
+                    navigation.components.map(button =>
+                        button.data.custom_id.startsWith('right') ?
+                        button.setDisabled(true)
+                        : button.setDisabled(false),
+                    );
+                } else navigation.components.map(button => button.setDisabled(false));
+
+                return await i.update({ embeds: [this._embeds[this.currentPage]], components: [navigation] });
+                // update(i, this._embeds, this.currentPage, checkPage(this.currentPage, components, len));
             }
             else if (i.customId === 'left') {
-                currentPage--;
-                update(i, this._embeds, currentPage, checkPage(currentPage, components, len));
+                this.currentPage--;
+                if (this.currentPage === 0) {
+                    navigation.components.map(button =>
+                        button.data.custom_id.startsWith('left') ?
+                        button.setDisabled(true)
+                        : button.setDisabled(false),
+                    );
+                } else navigation.components.map(button => button.setDisabled(false));
+
+                return await i.update({ embeds: [this._embeds[this.currentPage]], components: [navigation] });
+                // cupdate(i, this._embeds, this.currentPage, checkPage(this.currentPage, components, len));
             }
             else if (i.customId === 'right-fast') {
-                currentPage = len;
-                update(i, this._embeds, currentPage, checkPage(currentPage, components, len));
+                this.currentPage = totalPages;
+                navigation.components.map(button =>
+                    button.data.custom_id.startsWith('right') ?
+                    button.setDisabled(true)
+                    : button.setDisabled(false),
+                );
+                return await i.update({ embeds: [this._embeds[this.currentPage]], components: [navigation] });
+                // update(i, this._embeds, this.currentPage, checkPage(this.currentPage, components, len));
             }
             else if (i.customId === 'left-fast') {
-                currentPage = 0;
-                update(i, this._embeds, currentPage, checkPage(currentPage, components, len));
+                this.currentPage = 0;
+                navigation.components.map(button =>
+                    button.data.custom_id.startsWith('left') ?
+                    button.setDisabled(true)
+                    : button.setDisabled(false),
+                );
+                return await i.update({ embeds: [this._embeds[this.currentPage]], components: [navigation] });
+                // update(i, this._embeds, this.currentPage, checkPage(this.currentPage, components, len));
             }
             else if (i.customId === 'trash') {
-                i.update({
-                    components: [
-                        new ActionRowBuilder().addComponents(...components.map(btn => btn.setDisabled(true))),
-                    ],
-                });
+                i.update({ components: [] });
                 collector.stop();
             }
         });
 
         collector.on('end', () => {
+            navigation.components.map(button => button.setDisabled(true));
             if (!this.interaction) {
-                msg.edit({
-                        components: [
-                            checkPage('none', components, len),
-                    ],
-                });
+                msg.edit({ components: [] });
             }
             else {
-                this.commandType.editReply({
-                        components: [
-                            checkPage('none', components, len),
-                    ],
-                });
+                this.commandType.editReply({ components: [] });
             }
         });
+    }
+
+    // These are utility functions - useful for people who need this info in things such as callbacks :)
+    getLength() {
+        return this._groups.find(x => x.name === this.currentGroup).length - 1;
+    }
+    getPage() {
+        return this.currentPage;
+    }
+    setPage(page) {
+        this.currentPage = page;
+        return this.getPage();
     }
 }
 

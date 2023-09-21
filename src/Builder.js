@@ -7,12 +7,15 @@ class Builder {
         this.commandType = commandType;
         if (commandType instanceof ChatInputCommandInteraction) {
             this.interaction = true;
+            this.interactionOptions = { type: 'reply' };
         }
         else if (commandType instanceof Message) {
             this.interaction = false;
         }
         this.shouldMention = true;
         this.idle = true;
+        // ! TODO: MAKE FILTER WORK WITH INTERACTIONS AND MESSAGES
+        this.filter = (interaction) => interaction.user.id === commandType.author.id;
     }
     /**
      * @param {Number} durationSeconds - How long this interaction lasts
@@ -27,7 +30,7 @@ class Builder {
     /**
      * @param {Function} filter - How long this interaction lasts
      */
-    setFilter(filter) {
+    setFilter(filter, replyOptions = {}) {
         if (!correctType('function', filter)) {
             throw new SpudJSError(`Expected "function", got ${typeof filter}`);
         }
@@ -67,11 +70,8 @@ class Builder {
     /**
      * @param {Boolean} mention - Determines if this interaction will mention the replied user
      */
-    disableMention(mention) {
-        if (!correctType('boolean', mention)) {
-            throw new SpudJSError(`Expected "boolean", got ${typeof mention}`);
-        }
-        this.shouldMention = !mention;
+    disableMention(mention = true) {
+        this.shouldMention = mention;
         return this;
     }
     /**

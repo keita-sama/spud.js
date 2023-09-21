@@ -1,50 +1,31 @@
-const { ButtonBuilder, ActionRowBuilder, Message, SelectMenuBuilder } = require('discord.js');
+const { ButtonBuilder, ActionRowBuilder, Message, StringSelectMenuBuilder } = require('discord.js');
 const Builder = require('./Builder');
-const createButton = (id, emoji, style) => new ButtonBuilder().setCustomId(id).setEmoji(emoji).setStyle(style);
 
-function createActionRow(cur, components, max) {
-    switch (cur) {
-        case 0:
-            return new ActionRowBuilder().addComponents(components.map(btn => btn.data.custom_id.startsWith('left') ? btn.setDisabled(true) : btn.setDisabled(false)));
-        case max:
-            return new ActionRowBuilder().addComponents(components.map(btn => btn.data.custom_id.startsWith('right') ? btn.setDisabled(true) : btn.setDisabled(false)));
-        case 'none':
-            return new ActionRowBuilder().addComponents(components.map(btn => btn.setDisabled(true)));
-        case 'all':
-            return new ActionRowBuilder().addComponents(components.map(btn => btn.setDisabled(false)));
-        default:
-            return new ActionRowBuilder().addComponents(components.map(btn => btn.setDisabled(false)));
-    }
-}
+const paginationButtonMap = {
+    'first': 'left-fast',
+    'previous': 'left',
+    'next': 'right',
+    'last': 'right-fast',
+    'trash': 'trash' // This is lazy I know;
+};
 
-function update(interaction, self, rows) {
-    return interaction.update({
-        embeds: [
-            self._groups.find(x => x.name === self.currentGroup).embeds[self.currentPage],
-        ],
-        components: rows,
-    });
-}
-
-class GroupBuilder extends Builder {
-    constructor(message) {
-        super(message);
+// Hybrids are a cool mixture of Menu & Pagination.
+class HybridBuilder extends Builder {
+    constructor(input) {
+        super(input);
+        this.components = [];
         this._embeds = [];
         this.buttons = {
-            trash: createButton('trash', '⛔', 'Danger'),
-            right: createButton('right', '▶', 'Primary'),
-            last: createButton('right-fast', '⏭', 'Primary'),
-            left: createButton('left', '◀', 'Primary'),
-            first: createButton('left-fast', '⏮', 'Primary'),
+            trash: new ButtonBuilder().setCustomId('trash').setEmoji('🗑').setStyle('Danger'), // createButton('trash', '⛔', 'Danger'),
+            right: new ButtonBuilder().setCustomId('right').setEmoji('▶').setStyle('Primary'), //  createButton('right', '▶', 'Primary'),
+            last: new ButtonBuilder().setCustomId('right-fast').setEmoji('⏩').setStyle('Primary'), //  createButton('right-fast', '⏭', 'Primary'),
+            left: new ButtonBuilder().setCustomId('left').setEmoji('◀').setStyle('Primary').setDisabled(true), //  createButton('left', '◀', 'Primary'),
+            first: new ButtonBuilder().setCustomId('left-fast').setEmoji('⏪').setStyle('Primary').setDisabled(true), //  createButton('left-fast', '⏮', 'Primary'),
         };
+        this.len = this.getGroupLength;
         this.currentPage = 0;
         this.placeholder = 'Click here to change the group.';
-    }
-    _len() {
-        return this._groups.find(x => x.name === this.currentGroup).embeds.length - 1;
-    }
-    _paginationRow(other) {
-        return createActionRow((other || this.currentPage), this.components, this._len());
+        this.allowedEditButtonNames = ['right', 'left'];
     }
     /**
      * Adds a extra button that can be used to end the current pagination
@@ -52,6 +33,7 @@ class GroupBuilder extends Builder {
      */
     trashBin(bin) {
         this.trashBin = bin;
+        this.allowedEditButtonNames.push('trash');
         return this;
     }
     /**
@@ -60,15 +42,17 @@ class GroupBuilder extends Builder {
      */
     fastSkip(fastSkip) {
         this.fastSkip = fastSkip;
+        this.allowedEditButtonNames.push('first');
+        this.allowedEditButtonNames.push('last');
         return this;
     }
     /**
      * Sets the initial embeds
-     * @param {EmbedBuilder[]} embeds - The embeds that is initialized with the pagination.
+     * @param {EmbedBuilder[]} groups - The embeds that is initialized with the pagination.
      */
-    setGroups(embeds) {
-        this.currentGroup = embeds[0].name;
-        this._groups = embeds;
+    setGroups(groups) {
+        this.currentGroup = groups[0].name; // Set the first group to the first provided group
+        this._groups = groups;
         return this;
     }
     setPlaceholder(placeholder) {
@@ -76,17 +60,38 @@ class GroupBuilder extends Builder {
         return this;
     }
     editButton(name, style) {
-        for (const props in style) {
-            if (['style', 'emoji', 'label'].some(x => x === props)) this.buttons[name].data[props] = style[props];
+        if (!this.allowedEditButtonNames.some(x => x === name)) throw new SpudJSError('You didn\'t provide a valid button to edit! (MAKE SURE THE BUTTON NAMES YOU\'RE USING ARE ENABLED!)');
+        if (!style || !(style instanceof Object) && !(style instanceof ButtonBuilder)) throw new SpudJSError('"style" argument has been passed incorrectly!');
+        if (!['style', 'emoji', 'label'].some(x => x in style)) throw new SpudJSError('Invalid parameters given! Make sure you pass your style with one of the following properties "emoji", "style", "label"');
+        const button = this.buttons[paginationButtonMap[name]];
+
+        if (style instanceof ButtonBuilder) {
+            // Override button if one was provided;
+            this.button[paginationButtonMap[name]] = style;
         }
+        else {
+            if ('style' in style) {
+                button.setStyle(typeof style['style'] === 'number' ? style['style'] : stylesMap[style['style']]);
+            }
+            if ('emoji' in style) {
+                button.setEmoji(style['emoji']);
+            }
+            if ('label' in style) {
+                button.setLabel(style['label']);
+            }
+        }
+        // console.log(this.buttons[name].data);
         return this;
+    }
+
+    getCurrentEmbed() {
+        return this._groups.find(x => x.name === this.currentGroup).embeds[this.currentPage];
     }
     /**
      * Handles the entire interaction
      */
-    async send() {
+    async send(callback) {
         const { filter, max, time } = this;
-        this.components = [];
         const options = this._groups.map(option => {
             return {
                 label: option.name,
@@ -94,91 +99,153 @@ class GroupBuilder extends Builder {
                 emoji: option?.emoji,
             };
         });
-        const menu = new SelectMenuBuilder()
+
+        const navigationMenu = new ActionRowBuilder().addComponents(
+            new StringSelectMenuBuilder()
             .setPlaceholder(this.placeholder)
             .addOptions(options)
-            .setCustomId('spud-select-group');
-        const menuActionRow = new ActionRowBuilder().addComponents(menu);
+            .setCustomId('spud-select-group')
+        );
+        const navigationPaging = new ActionRowBuilder().addComponents(...this.components);
 
         if (this.trashBin === true) {
-            this.components.push(this.buttons.left, this.buttons.trash, this.buttons.right);
+            navigationPaging.components.push(this.buttons.left, this.buttons.trash, this.buttons.right);
         }
         else {
-            this.components.push(this.buttons.left, this.buttons.right);
+            navigationPaging.components.push(this.buttons.left, this.buttons.right);
         }
-        if (this.fastSkip === true) {
-            this.components.unshift(this.buttons.first);
-            this.components.push(this.buttons.last);
+        if (navigationPaging.fastSkip === true) {
+            navigationPaging.components.unshift(this.buttons.first);
+            navigationPaging.components.push(this.buttons.last);
         }
-
+        
+        let totalPages = this.getGroupLength;
+        
         let msg;
+
         if (!this.interaction) {
             msg = await this.commandType.reply({
                 content: this.content,
-                embeds: [
-                    this._groups.find(x => x.name === this.currentGroup).embeds[this.currentPage],
-                ],
-                components: [this._paginationRow(), menuActionRow],
+                embeds: [this.getCurrentEmbed()],
+                components: [navigationMenu, navigationPaging],
                 allowedMentions: { repliedUser: this.shouldMention },
             });
         }
         else {
             msg = await this.commandType[this.interactionOptions.type]({
                 content: this.content,
-                embeds: [
-                    this._groups.find(x => x.name === this.currentGroup).embeds[this.currentPage],
-                ],
-                components: [this._paginationRow(), menuActionRow],
+                embeds: [this.getCurrentEmbed()],
+                components: [navigationMenu, navigationPaging],
             });
         }
 
         const collector = msg.createMessageComponentCollector({ filter, time, max });
 
         collector.on('collect', async (i) => {
-            if (i.customId === 'spud-select-group') {
-                this.currentGroup = i.values[0];
-                this.currentPage = 0;
-                update(i, this, [this._paginationRow(), menuActionRow]);
+            if (callback) {
+                const resultOfCallback = callback(i, this, collector);
+                // Allows callbacks to also skip pagination execution
+                if (resultOfCallback === 'RETURN') { 
+                    return;
+                }
             }
+
+            totalPages = this.getGroupLength();
+
             if (this.idle === true) {
                 collector.resetTimer();
             }
+
+            if (i.customId === 'spud-select-group') {
+                this.currentGroup = i.values[0];
+                this.currentPage = 0;
+
+                return await i.update({
+                    embeds: [this.getCurrentEmbed()],
+                    components: [navigationMenu, navigationPaging]
+                });
+                
+            }
+
             if (i.customId === 'right') {
                 this.currentPage++;
-                update(i, this, [this._paginationRow(), menuActionRow]);
+                if (this.currentPage >= totalPages) {
+                    navigationPaging.components.map(button =>
+                        button.data.custom_id.startsWith('right') ?
+                        button.setDisabled(true)
+                        : button.setDisabled(false),
+                    );
+                } else navigationPaging.components.map(button => button.setDisabled(false));
+
+                return await i.update({
+                    embeds: [this.getCurrentEmbed()],
+                    components: [navigationMenu, navigationPaging]
+                });
             }
             else if (i.customId === 'left') {
                 this.currentPage--;
-                update(i, this, [this._paginationRow(), menuActionRow]);
+                if (this.currentPage === 0) {
+                    navigationPaging.components.map(button =>
+                        button.data.custom_id.startsWith('left') ?
+                        button.setDisabled(true)
+                        : button.setDisabled(false),
+                    );
+                } else navigationPaging.components.map(button => button.setDisabled(false));
+
+                return await i.update({
+                    embeds: [this.getCurrentEmbed()],
+                    components: [navigationMenu, navigationPaging]
+                });
             }
             else if (i.customId === 'right-fast') {
-                this.currentPage = this._len();
-                update(i, this, [this._paginationRow(), menuActionRow]);
+                this.currentPage = this.getGroupLength();
+
+                navigationPaging.components.map(button =>
+                    button.data.custom_id.startsWith('right') ?
+                    button.setDisabled(true)
+                    : button.setDisabled(false),
+                );
+
+                return await i.update({
+                    embeds: [this.getCurrentEmbed()],
+                    components: [navigationMenu, navigationPaging]
+                });
             }
             else if (i.customId === 'left-fast') {
                 this.currentPage = 0;
-                update(i, this, [this._paginationRow(), menuActionRow]);
+                navigationPaging.components.map(button =>
+                    button.data.custom_id.startsWith('right') ?
+                    button.setDisabled(true)
+                    : button.setDisabled(false),
+                );
+                return await i.update({
+                    embeds: [this.getCurrentEmbed()],
+                    components: [navigationMenu, navigationPaging]
+                });
             }
             else if (i.customId === 'trash') {
-                i.update({});
+                i.update({ components: [] });
                 collector.stop();
             }
         });
 
         collector.on('end', () => {
-            const disabledMenu = new ActionRowBuilder().addComponents(menu.setPlaceholder('Expired').setDisabled(true));
             if (this.commandType instanceof Message) {
-                msg.edit({
-                    components: [this._paginationRow('none'), disabledMenu],
-                });
+                msg.edit({ components: [] });
             }
             else {
-                this.commandType.editReply({
-                    components: [this._paginationRow('none'), disabledMenu],
-                });
+                this.commandType.editReply({ components: [] });
             }
         });
     }
+    
+    // Util functions
+    getLength() {
+        return this._groups.length;
+    }
+    getGroupLength() {
+        return this._groups.find(x => x.name === this.currentGroup).embeds.length - 1;
+    }
 }
 
-module.exports = GroupBuilder;
+module.exports = HybridBuilder;

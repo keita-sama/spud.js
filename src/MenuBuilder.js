@@ -1,13 +1,15 @@
-const { correctType } = require('./Utils');
-const { SelectMenuBuilder, ActionRowBuilder } = require('discord.js');
+const { StringSelectMenuBuilder, ActionRowBuilder } = require('discord.js');
 const MenuOption = require('./options/MenuOption');
 const Builder = require('./Builder');
 const SpudJSError = require('./errors/SpudJSError');
 
+
+function createIdFromLabel(label) {
+    return label.toLowerCase().replace(/ /g, '_');
+}
 class MenuBuilder extends Builder {
-    constructor(commandType) {
-        console.log(commandType);
-        super(commandType);
+    constructor(input) {
+        super(input);
         this._options = [];
     }
 
@@ -16,7 +18,6 @@ class MenuBuilder extends Builder {
      * @param {String} placeholder - The text seen on your Select Menu
      */
     setPlaceholder(placeholder) {
-        if (!correctType('string', placeholder)) throw new SpudJSError(`Expected "string", got ${typeof placeholder}`);
         this.placeholder = placeholder;
         return this;
     }
@@ -62,23 +63,25 @@ class MenuBuilder extends Builder {
     /**
      * Handles the entire interaction
      */
-    async send() {
+    async send(callback) {
         const { filter, max, time } = this;
 
         const options = this._options.map(option => {
             return {
                 label: option.label,
                 description: option.description,
-                value: option.value ?? option.label.toLowerCase().replace(/ +/g, '_'),
+                value: option.value ?? createIdFromLabel(option.label),
                 default: option?.default ?? false,
                 emoji: option?.emoji,
             };
         });
 
-        const menu = new SelectMenuBuilder()
+        const navigation = new ActionRowBuilder().addComponents(
+            new StringSelectMenuBuilder()
             .setPlaceholder(this.placeholder)
             .addOptions(...options)
-            .setCustomId('spud-select');
+            .setCustomId('spud-select'),
+        );
 
         let msg;
 
@@ -86,9 +89,7 @@ class MenuBuilder extends Builder {
             msg = await this.commandType.reply({
                 content: this.content,
                 embeds: [this._options[0].embed],
-                components: [
-                    new ActionRowBuilder().addComponents(menu),
-                ],
+                components: [navigation],
                 allowedMentions: { repliedUser: this.shouldMention },
             });
         }
@@ -96,9 +97,7 @@ class MenuBuilder extends Builder {
             msg = await this.commandType[this.interactionOptions.type]({
                 content: this.content,
                 embeds: [this._options[0].embed],
-                components: [
-                    new ActionRowBuilder().addComponents(menu),
-                ],
+                components: [navigation],
             });
         }
 
@@ -106,11 +105,21 @@ class MenuBuilder extends Builder {
         const collector = msg.createMessageComponentCollector({ filter, max, time });
 
         collector.on('collect', async (m) => {
-            collector.resetTimer();
-            const val = m.values[0];
+            if (callback) {
+                const resultOfCallback = callback(m, this, collector);
+                // Allows callbacks to also skip menu updates
+                if (resultOfCallback === 'RETURN') { 
+                    return;
+                }
+            }
+            if (this.idle) {
+                await collector.resetTimer();
+            }
+            
+            const embedId = m.values[0];
             await m.update({
                 embeds: [
-                    this._options.find(option => option.label.toLowerCase().replace(/ /g, '_') === val).embed,
+                    this._options.find(option => createIdFromLabel(option.label) === embedId).embed,
                 ],
             });
         });
@@ -118,16 +127,12 @@ class MenuBuilder extends Builder {
         collector.on('end', () => {
             if (!this.interaction) {
                 msg.edit({
-                        components: [
-                             new ActionRowBuilder().addComponents(menu.setPlaceholder('Expired').setDisabled(true)),
-                    ],
+                    components: [navigation.components.map(x => x.setPlaceholder('Expired').setDisabled(true))],
                 });
             }
             else {
                 this.commandType.editReply({
-                        components: [
-                             new ActionRowBuilder().addComponents(menu.setPlaceholder('Expired').setDisabled(true)),
-                    ],
+                    components: [navigation.components.map(x => x.setPlaceholder('Expired').setDisabled(true))],
                 });
             }
         });
