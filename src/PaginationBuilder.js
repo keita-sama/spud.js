@@ -239,7 +239,7 @@ class PaginationBuilder extends Builder {
 
     // These are utility functions - useful for people who need this info in things such as callbacks :)
     getLength() {
-        return this._groups.find(x => x.name === this.currentGroup).length - 1;
+        return this._embeds.length;
     }
     getPage() {
         return this.currentPage;
