@@ -1,6 +1,6 @@
 const { StringSelectMenuBuilder, ActionRowBuilder } = require('discord.js');
-const MenuOption = require('./options/MenuOption');
-const SpudJSError = require('./errors/SpudJSError');
+const MenuOption = require('../options/MenuOption');
+const SpudJSError = require('../errors/SpudJSError');
 const Builder = require('./Builder');
 
 /**
@@ -14,11 +14,11 @@ function createIdFromLabel(label) {
 
 module.exports = class MenuBuilder extends Builder {
     /**
-     * Add custom options to the builder
-     * @param {*} input - Options to be specified
+     * Add the command interaction or message to reply with
+     * @param {CommandInteraction | Message} commandType - Command type to be specified
      */
-    constructor(input) {
-        super(input);
+    constructor(commandType) {
+        super(commandType);
         this._options = [];
     }
 
@@ -68,13 +68,13 @@ module.exports = class MenuBuilder extends Builder {
      * Get the current menu options
      * @returns {*[] | MenuOption[]}
      */
-    get getOptions() {
+    getOptions() {
         return this._options;
     }
 
     /**
      * Sends & handles the pagination
-     * @param {Function} callback
+     * @param {Function} [callback]
      * @returns {void}
      */
     async send(callback) {

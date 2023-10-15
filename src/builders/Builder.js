@@ -1,5 +1,5 @@
 const { Message, ChatInputCommandInteraction, CommandInteraction } = require('discord.js');
-const SpudJSError = require('./errors/SpudJSError');
+const SpudJSError = require('../errors/SpudJSError');
 
 /**
  * @param {String} type 
@@ -12,8 +12,8 @@ function correctType(type, given) {
 
 module.exports = class Builder {
     /**
-     * Add the command type options
-     * @param {*} commandType - Command type to be specified
+     * Add the command interaction or message to reply with
+     * @param {CommandInteraction | Message} commandType - Command type to be specified
      */
     constructor(commandType) {
         this.commandType = commandType;
@@ -49,7 +49,7 @@ module.exports = class Builder {
 
     /**
      * Set the interaction filter
-     * @param {Function} filter - Parameter to handle interaction filtering
+     * @param {Function} [filter] - Parameter to handle interaction filtering
      * @throws {SpudJSError} If the filter parameter isn't a function
      * @returns {Builder}
      */
@@ -75,11 +75,11 @@ module.exports = class Builder {
 
     /**
      * Set if the interaction can idle
-     * @param {Boolean} idle - Parameter to determine if this interaction can idle
+     * @param {Boolean} [idle] - Parameter to determine if this interaction can idle
      * @throws {SpudJSError} If the idle parameter isn't a boolean
      * @returns {Builder}
      */
-    setIdle(idle) {
+    setIdle(idle = false) {
         if (!correctType('boolean', idle)) throw new SpudJSError(`Expected "boolean", got ${typeof idle}`);
 
         this.idle = idle;
@@ -101,7 +101,7 @@ module.exports = class Builder {
 
     /**
      * Set if the bot should disable mentioning when replying to a user
-     * @param {Boolean} mention - Parameter to determine if the interaction should mention
+     * @param {Boolean} [mention] - Parameter to determine if the interaction should mention
      * @returns {Builder}
      */
     disableMention(mention = true) {

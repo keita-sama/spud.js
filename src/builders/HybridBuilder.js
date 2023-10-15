@@ -1,13 +1,5 @@
-const { ButtonBuilder, ActionRowBuilder, EmbedBuilder } = require('discord.js');
-const SpudJSError = require('./errors/SpudJSError');
+const { ButtonBuilder, ActionRowBuilder, Message, StringSelectMenuBuilder } = require('discord.js');
 const Builder = require('./Builder');
-
-const stylesMap = {
-    'Primary': 1,
-    'Secondary': 2,
-    'Danger': 4,
-    'Sucess': 3,
-};
 
 const paginationButtonMap = {
     'first': 'left-fast',
@@ -17,14 +9,14 @@ const paginationButtonMap = {
     'trash': 'trash',
 };
 
-module.exports = class PaginationBuilder extends Builder {
+module.exports = class HybridBuilder extends Builder {
     /**
-     * Add custom options to the builder
-     * @param {*} input - Options to be specified
+     * Add the command interaction or message to reply with
+     * @param {CommandInteraction | Message} commandType - Command type to be specified
      */
-    constructor(input) {
-        super(input);
-
+    constructor(commandType) {
+        super(commandType);
+        this.components = [];
         this._embeds = [];
         this.buttons = {
             trash: new ButtonBuilder().setCustomId('trash').setEmoji('🗑').setStyle('Danger'),
@@ -33,81 +25,63 @@ module.exports = class PaginationBuilder extends Builder {
             left: new ButtonBuilder().setCustomId('left').setEmoji('◀').setStyle('Primary').setDisabled(true),
             first: new ButtonBuilder().setCustomId('left-fast').setEmoji('⏪').setStyle('Primary').setDisabled(true),
         };
-        this.len = this.getLength();
+        this.len = this.getGroupLength;
         this.currentPage = 0;
-        this.allowedEditButtonNames = ['previous', 'next'];
+        this.placeholder = 'Click here to change the group.';
+        this.allowedEditButtonNames = ['right', 'left'];
     }
 
     /**
      * Add a trash bin button to the pagination
-     * @param {Boolean} trashBin - Parameter to toggle the trash bin button
+     * @param {Boolean} [bin] - Parameter to toggle the trash bin button
      * @returns {PaginationBuilder}
      */
-    trashBin(trashBin = false) {
-        this.trashBin = trashBin;
+    trashBin(bin = false) {
+        this.trashBin = bin;
         this.allowedEditButtonNames.push('trash');
         return this;
     }
 
     /**
      * Adds fast skipping to the pagination
-     * @param {Boolean} fastSkip - Parameter to toggle the fast skip buttons
+     * @param {Boolean} [fastSkip] - Parameter to toggle the fast skip buttons
      * @returns {PaginationBuilder}
      */
     fastSkip(fastSkip = false) {
         this.fastSkip = fastSkip;
-        this.allowedEditButtonNames.push('last');
         this.allowedEditButtonNames.push('first');
+        this.allowedEditButtonNames.push('last');
         return this;
     }
 
     /**
      * Set the initial embeds
-     * @param {EmbedBuilder[]} embeds - Parameter of embeds to be initialized
-     * @throws {SpudJSError} If the embeds parameter isn't an array
-     * @throws {SpudJSError} If the embeds isn't an EmbedBuilder or an object
-     * @returns {PaginationBuilder}
+     * @param {EmbedBuilder[]} groups - The embeds that is initialized with the pagination
+     * @returns {HybridBuilder}
      */
-    setEmbeds(embeds) {
-        if (!(embeds instanceof Array)) throw new SpudJSError(`Expected "Array", got ${typeof embeds}`);
-        else embeds.forEach((embed) => {
-            if (!(embed instanceof EmbedBuilder) && typeof embed !== 'object') throw new SpudJSError('Incorrect argument passed, must be either "EmbedBuilder" or "Object"');
-        });
-
-        this._embeds = embeds;
+    setGroups(groups) {
+        this.currentGroup = groups[0].name;
+        this._groups = groups;
         return this;
     }
 
     /**
-     * Add an embed to the pagination
-     *
-     * @param {EmbedBuilder} embed - Parameter of the embed to be added to the pagination.
-     * @throws {SpudJSError} If the embed parameter isn't an EmbedBuilder
-     * @returns {PaginationBuilder}
+     * Set the placeholder text of the menu
+     * @param {String} placeholder - Parameter of the placeholder text
+     * @returns {MenuBuilder}
      */
-    addEmbed(embed) {
-        if (!(embed instanceof EmbedBuilder)) throw new SpudJSError(`Expected "EmbedBuilder", got ${typeof embed}`);
-        this._embeds.push(embed);
+    setPlaceholder(placeholder) {
+        this.placeholder = placeholder;
         return this;
-    }
-
-    /**
-     * Get the current embeds in the pagination
-     * @throws {SpudJSError} If there are no embeds within the pagination
-     * @returns {Embeds[]}
-     */
-    get getEmbeds() {
-        if (this._embeds.length === 0) throw new SpudJSError('There is no embeds, add some using setEmbeds/addEmbed!');
-        return this._embeds;
     }
 
     /**
      * Edit a button within the pagination
      * @param {String} name - Parameter of the name of the button you want to edit
      * @param {ButtonBuilder | { style?: number | string, emoji?: string, label?: string }} style - Parameter of the button or style to be edited
-     * @throws {SpudJSError} If the name parameter isn't valid
-     * @throws {SpudJSError} If the style parameter has been passed incorrectly
-     * @throws {SpudJSError} If the style parameter has invalid parameters in it
+     * @throws {SpudJSError} If parameter name isn't valid
+     * @throws {SpudJSError} If parameter style has been passed incorrectly
+     * @throws {SpudJSError} If paramter style has invalid parameters in it
      * @returns {PaginationBuilder}
      */
     editButton(name, style) {
@@ -128,44 +102,66 @@ module.exports = class PaginationBuilder extends Builder {
     }
 
     /**
+     * Get the current embed
+     * @returns {EmbedBuilder}
+     */
+    getCurrentEmbed() {
+        return this._groups.find(x => x.name === this.currentGroup).embeds[this.currentPage];
+    }
+
+    /**
      * Sends & handles the pagination
-     * @param {Function} callback
+     * @param {Function} [callback]
      * @returns {void}
      */
     async send(callback) {
         const { filter, max, time } = this;
-        const navigation = new ActionRowBuilder();
+
+        const options = this._groups.map(option => {
+            return {
+                label: option.name,
+                value: option.name,
+                emoji: option?.emoji,
+            };
+        });
+
+        const navigationMenu = new ActionRowBuilder().addComponents(
+            new StringSelectMenuBuilder()
+            .setPlaceholder(this.placeholder)
+            .addOptions(options)
+            .setCustomId('spud-select-group')
+        );
+        const navigationPaging = new ActionRowBuilder().addComponents(...this.components);
 
         this.trashbin === true ?
             navigation.components.push(this.buttons.left, this.buttons.trash, this.buttons.right) :
             navigation.components.push(this.buttons.left, this.buttons.right);
 
-        if (this.fastSkip === true) {
-            navigation.components.unshift(this.buttons.first);
-            navigation.components.push(this.buttons.last);
+        if (navigationPaging.fastSkip === true) {
+            navigationPaging.components.unshift(this.buttons.first);
+            navigationPaging.components.push(this.buttons.last);
         }
-
-        this.currentPage = 0;
-
-        let totalPages = this.getLength();
+        
+        let totalPages = this.getGroupLength;
         let msg = null;
 
-        if (this.interaction === true) {
-            msg = await this.commandType[this.interactionOptions.type]({
-                content: this.content,
-                embeds: [this._embeds[this.currentPage]],
-                components: [navigation],
-            });
-        } else {
+        if (!this.interaction) {
             msg = await this.commandType.reply({
                 content: this.content,
-                embeds: [this._embeds[this.currentPage]],
-                components: [navigation],
+                embeds: [this.getCurrentEmbed()],
+                components: [navigationMenu, navigationPaging],
                 allowedMentions: { repliedUser: this.shouldMention },
             });
         }
+        else {
+            msg = await this.commandType[this.interactionOptions.type]({
+                content: this.content,
+                embeds: [this.getCurrentEmbed()],
+                components: [navigationMenu, navigationPaging],
+            });
+        }
 
-        const collector = msg.createMessageComponentCollector({ time, max, filter });
+        const collector = msg.createMessageComponentCollector({ filter, time, max });
 
         collector.on('collect', async (i) => {
             if (callback) {
@@ -173,9 +169,19 @@ module.exports = class PaginationBuilder extends Builder {
                 if (resultOfCallback === 'RETURN') return;
             }
 
-            totalPages = this.getLength();
+            totalPages = this.getGroupLength();
 
-            if (this.idle === true) await collector.resetTimer();
+            if (this.idle === true) collector.resetTimer();
+
+            if (i.customId === 'spud-select-group') {
+                this.currentGroup = i.values[0];
+                this.currentPage = 0;
+
+                return await i.update({
+                    embeds: [this.getCurrentEmbed()],
+                    components: [navigationMenu, navigationPaging]
+                });
+            }
 
             if (i.customId === 'right') {
                 this.currentPage++;
@@ -208,33 +214,28 @@ module.exports = class PaginationBuilder extends Builder {
         });
 
         collector.on('end', () => {
-            navigation.components.map((button) => button.setDisabled(true));
-            !this.interaction ? msg.edit({ components: [] }) : this.commandType.editReply({ components: [] });
+            if (this.commandType instanceof Message) {
+                msg.edit({ components: [] });
+            }
+            else {
+                this.commandType.editReply({ components: [] });
+            }
         });
     }
 
     /**
-     * Get the current length of embeds
+     * Get the length of groups
      * @returns {Number}
      */
-    get getLength() {
-        return this._embeds.length;
+    getLength() {
+        return this._groups.length;
     }
 
     /**
-     * Get the current page number
+     * Get the group embeds' length
      * @returns {Number}
      */
-    get getPage() {
-        return this.currentPage;
-    }
-
-    /**
-     * Set the current page
-     * @param {Number} page - Parameter of the page number
-     * @returns {void}
-     */
-    setPage(page) {
-        this.currentPage = page;
+    getGroupLength() {
+        return this._groups.find(x => x.name === this.currentGroup).embeds.length - 1;
     }
 }
