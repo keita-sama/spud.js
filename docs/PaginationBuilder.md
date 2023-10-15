@@ -48,7 +48,7 @@ returns `PaginationBuilder`
 |:-:|:-:|:-:|
 | embeds | [Array]<[EmbedBuilder]> | Embeds that this pagination is initialized with. |
 
-returns `PaginationBuil
+returns `PaginationBuilder`
 
 ---
 #### addEmbeds([embed]())

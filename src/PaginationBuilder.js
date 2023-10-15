@@ -1,6 +1,6 @@
-const { ButtonBuilder, ActionRowBuilder, EmbedBuilder, CommandInteraction } = require('discord.js');
-const Builder = require('./Builder');
+const { ButtonBuilder, ActionRowBuilder, EmbedBuilder } = require('discord.js');
 const SpudJSError = require('./errors/SpudJSError');
+const Builder = require('./Builder');
 
 const stylesMap = {
     'Primary': 1,
@@ -14,35 +14,45 @@ const paginationButtonMap = {
     'previous': 'left',
     'next': 'right',
     'last': 'right-fast',
-    'trash': 'trash' // This is lazy I know;
+    'trash': 'trash',
 };
 
-class PaginationBuilder extends Builder {
+module.exports = class PaginationBuilder extends Builder {
+    /**
+     * Add custom options to the builder
+     * @param {*} input - Options to be specified
+     */
     constructor(input) {
         super(input);
+
         this._embeds = [];
         this.buttons = {
-            trash: new ButtonBuilder().setCustomId('trash').setEmoji('🗑').setStyle('Danger'), // createButton('trash', '⛔', 'Danger'),
-            right: new ButtonBuilder().setCustomId('right').setEmoji('▶').setStyle('Primary'), //  createButton('right', '▶', 'Primary'),
-            last: new ButtonBuilder().setCustomId('right-fast').setEmoji('⏩').setStyle('Primary'), //  createButton('right-fast', '⏭', 'Primary'),
-            left: new ButtonBuilder().setCustomId('left').setEmoji('◀').setStyle('Primary').setDisabled(true), //  createButton('left', '◀', 'Primary'),
-            first: new ButtonBuilder().setCustomId('left-fast').setEmoji('⏪').setStyle('Primary').setDisabled(true), //  createButton('left-fast', '⏮', 'Primary'),
+            trash: new ButtonBuilder().setCustomId('trash').setEmoji('🗑').setStyle('Danger'),
+            right: new ButtonBuilder().setCustomId('right').setEmoji('▶').setStyle('Primary'),
+            last: new ButtonBuilder().setCustomId('right-fast').setEmoji('⏩').setStyle('Primary'),
+            left: new ButtonBuilder().setCustomId('left').setEmoji('◀').setStyle('Primary').setDisabled(true),
+            first: new ButtonBuilder().setCustomId('left-fast').setEmoji('⏪').setStyle('Primary').setDisabled(true),
         };
         this.len = this.getLength();
         this.currentPage = 0;
         this.allowedEditButtonNames = ['previous', 'next'];
     }
+
     /**
-     * @param {Boolean} trashBin - Determines whether this pagination has a button to end it.
+     * Add a trash bin button to the pagination
+     * @param {Boolean} trashBin - Parameter to toggle the trash bin button
+     * @returns {PaginationBuilder}
      */
     trashBin(trashBin = false) {
         this.trashBin = trashBin;
         this.allowedEditButtonNames.push('trash');
         return this;
     }
+
     /**
-     * Adds fast skipping
-     * @param {Boolean} fastSkip - Determines whether this pagination can skip to the first and last pages.
+     * Adds fast skipping to the pagination
+     * @param {Boolean} fastSkip - Parameter to toggle the fast skip buttons
+     * @returns {PaginationBuilder}
      */
     fastSkip(fastSkip = false) {
         this.fastSkip = fastSkip;
@@ -50,97 +60,103 @@ class PaginationBuilder extends Builder {
         this.allowedEditButtonNames.push('first');
         return this;
     }
+
     /**
-     * Sets the initial embeds
-     * @param {Array<EmbedBuilder>} embeds - The embeds that is initialized with the pagination.
+     * Set the initial embeds
+     * @param {EmbedBuilder[]} embeds - Parameter of embeds to be initialized
+     * @throws {SpudJSError} If the embeds parameter isn't an array
+     * @throws {SpudJSError} If the embeds isn't an EmbedBuilder or an object
+     * @returns {PaginationBuilder}
      */
     setEmbeds(embeds) {
-        if (!(embeds instanceof Array)) {
-            throw new SpudJSError(`Expected "Array", got ${typeof embeds}`);
-        }
-        else {
-            embeds.forEach(embed => {
-                if (
-                    !(embed instanceof EmbedBuilder) &&
-                    typeof embed !== 'object'
-                ) throw new SpudJSError('Incorrect argument passed, must be either "EmbedBuilder" or "Object"');
-            });
-        }
+        if (!(embeds instanceof Array)) throw new SpudJSError(`Expected "Array", got ${typeof embeds}`);
+        else embeds.forEach((embed) => {
+            if (!(embed instanceof EmbedBuilder) && typeof embed !== 'object') throw new SpudJSError('Incorrect argument passed, must be either "EmbedBuilder" or "Object"');
+        });
+
         this._embeds = embeds;
         return this;
     }
+
     /**
-     * Adds an embed
-     * @param {EmbedBuilder} embed - Appends an embed to this instance of pagination
+     * Add an embed to the pagination
+     *
+     * @param {EmbedBuilder} embed - Parameter of the embed to be added to the pagination.
+     * @throws {SpudJSError} If the embed parameter isn't an EmbedBuilder
+     * @returns {PaginationBuilder}
      */
     addEmbed(embed) {
         if (!(embed instanceof EmbedBuilder)) throw new SpudJSError(`Expected "EmbedBuilder", got ${typeof embed}`);
         this._embeds.push(embed);
         return this;
     }
+
     /**
-     * A getter for the embeds.
-     * @returns {Array<Embeds>}
+     * Get the current embeds in the pagination
+     * @throws {SpudJSError} If there are no embeds within the pagination
+     * @returns {Embeds[]}
      */
-    getEmbeds() {
+    get getEmbeds() {
         if (this._embeds.length === 0) throw new SpudJSError('There is no embeds, add some using setEmbeds/addEmbed!');
         return this._embeds;
     }
+
     /**
-     * 
-     * @param {String} name - The name of the button you want to edit.
-     * @param {Object | ButtonBuilder} style - The Button/Style the pagination will make use of.
+     * Edit a button within the pagination
+     * @param {String} name - Parameter of the name of the button you want to edit
+     * @param {ButtonBuilder | { style?: number | string, emoji?: string, label?: string }} style - Parameter of the button or style to be edited
+     * @throws {SpudJSError} If the name parameter isn't valid
+     * @throws {SpudJSError} If the style parameter has been passed incorrectly
+     * @throws {SpudJSError} If the style parameter has invalid parameters in it
+     * @returns {PaginationBuilder}
      */
     editButton(name, style) {
-        if (!this.allowedEditButtonNames.some(x => x === name)) throw new SpudJSError('You didn\'t provide a valid button to edit! (MAKE SURE THE BUTTON NAMES YOU\'RE USING ARE ENABLED!)');
-        if (!style || !(style instanceof Object) && !(style instanceof ButtonBuilder)) throw new SpudJSError('"style" argument has been passed incorrectly!');
-        if (!['style', 'emoji', 'label'].some(x => x in style)) throw new SpudJSError('Invalid parameters given! Make sure you pass your style with one of the following properties "emoji", "style", "label"');
+        if (!this.allowedEditButtonNames.some(x => x === name)) throw new SpudJSError('Invalid button name to edit');
+        else if (!style || !(style instanceof Object) && !(style instanceof ButtonBuilder)) throw new SpudJSError('Argument style has been passed incorrectly');
+        else if (!['style', 'emoji', 'label'].some(x => x in style)) throw new SpudJSError('Invalid parameters given');
+
         const button = this.buttons[paginationButtonMap[name]];
 
-        if (style instanceof ButtonBuilder) {
-            // Override button if one was provided;
-            this.button[paginationButtonMap[name]] = style;
-        }
+        if (style instanceof ButtonBuilder) this.button[paginationButtonMap[name]] = style;
         else {
-            if ('style' in style) {
-                button.setStyle(typeof style['style'] === 'number' ? style['style'] : stylesMap[style['style']]);
-            }
-            if ('emoji' in style) {
-                button.setEmoji(style['emoji']);
-            }
-            if ('label' in style) {
-                button.setLabel(style['label']);
-            }
+            if ('style' in style) button.setStyle(typeof style['style'] === 'number' ? style['style'] : stylesMap[style['style']]);
+            if ('emoji' in style) button.setEmoji(style['emoji']);
+            if ('label' in style) button.setLabel(style['label']);
         }
-        // console.log(this.buttons[name].data);
+
         return this;
     }
+
     /**
-     * Handles the entire interaction
+     * Sends & handles the pagination
+     * @param {Function} callback
+     * @returns {void}
      */
     async send(callback) {
         const { filter, max, time } = this;
-
         const navigation = new ActionRowBuilder();
 
-        if (this.trashBin === true) {
-            navigation.components.push(this.buttons.left, this.buttons.trash, this.buttons.right);
-        }
-        else {
+        this.trashbin === true ?
+            navigation.components.push(this.buttons.left, this.buttons.trash, this.buttons.right) :
             navigation.components.push(this.buttons.left, this.buttons.right);
-        }
+
         if (this.fastSkip === true) {
             navigation.components.unshift(this.buttons.first);
             navigation.components.push(this.buttons.last);
         }
 
         this.currentPage = 0;
+
         let totalPages = this.getLength();
+        let msg = null;
 
-        // Initialise the message variable (Will be used for collector)
-        let msg;
-
-        if (!this.interaction) {
+        if (this.interaction === true) {
+            msg = await this.commandType[this.interactionOptions.type]({
+                content: this.content,
+                embeds: [this._embeds[this.currentPage]],
+                components: [navigation],
+            });
+        } else {
             msg = await this.commandType.reply({
                 content: this.content,
                 embeds: [this._embeds[this.currentPage]],
@@ -148,106 +164,77 @@ class PaginationBuilder extends Builder {
                 allowedMentions: { repliedUser: this.shouldMention },
             });
         }
-        else {
-            msg = await this.commandType[this.interactionOptions.type]({
-                content: this.content,
-                embeds: [this._embeds[this.currentPage]],
-                components: [navigation],
-            });
-        }
-
 
         const collector = msg.createMessageComponentCollector({ time, max, filter });
-        const userPropName = this.interaction === true ? 'user' : 'author';
 
         collector.on('collect', async (i) => {
             if (callback) {
                 const resultOfCallback = callback(i, this, collector);
-                // Allows callbacks to also skip pagination execution
-                if (resultOfCallback === 'RETURN') { 
-                    return;
-                }
+                if (resultOfCallback === 'RETURN') return;
             }
-            // Update pagination length - allows embeds to dynamically be updated.
+
             totalPages = this.getLength();
-            // console.log(this._embeds); FOR DEBUG PURPOSES
-            if (this.idle === true) {
-                await collector.resetTimer();
-            }
+
+            if (this.idle === true) await collector.resetTimer();
+
             if (i.customId === 'right') {
                 this.currentPage++;
-                if (this.currentPage >= totalPages) {
-                    navigation.components.map(button =>
-                        button.data.custom_id.startsWith('right') ?
-                        button.setDisabled(true)
-                        : button.setDisabled(false),
-                    );
-                } else navigation.components.map(button => button.setDisabled(false));
+
+                if (this.currentPage >= totalPages) navigation.components.map((button) => button.data.custom_id.startsWith('right') ? button.setDisabled(true) : button.setDisabled(false));
+                else navigation.components.map(button => button.setDisabled(false));
 
                 return await i.update({ embeds: [this._embeds[this.currentPage]], components: [navigation] });
-                // update(i, this._embeds, this.currentPage, checkPage(this.currentPage, components, len));
-            }
-            else if (i.customId === 'left') {
+            } else if (i.customId === 'left') {
                 this.currentPage--;
-                if (this.currentPage === 0) {
-                    navigation.components.map(button =>
-                        button.data.custom_id.startsWith('left') ?
-                        button.setDisabled(true)
-                        : button.setDisabled(false),
-                    );
-                } else navigation.components.map(button => button.setDisabled(false));
+
+                if (this.currentPage === 0) navigation.components.map(button => button.data.custom_id.startsWith('left') ? button.setDisabled(true) : button.setDisabled(false));
+                else navigation.components.map(button => button.setDisabled(false));
 
                 return await i.update({ embeds: [this._embeds[this.currentPage]], components: [navigation] });
-                // cupdate(i, this._embeds, this.currentPage, checkPage(this.currentPage, components, len));
-            }
-            else if (i.customId === 'right-fast') {
+            } else if (i.customId === 'right-fast') {
                 this.currentPage = totalPages;
-                navigation.components.map(button =>
-                    button.data.custom_id.startsWith('right') ?
-                    button.setDisabled(true)
-                    : button.setDisabled(false),
-                );
+                navigation.components.map(button => button.data.custom_id.startsWith('right') ? button.setDisabled(true) : button.setDisabled(false));
+
                 return await i.update({ embeds: [this._embeds[this.currentPage]], components: [navigation] });
-                // update(i, this._embeds, this.currentPage, checkPage(this.currentPage, components, len));
-            }
-            else if (i.customId === 'left-fast') {
+            } else if (i.customId === 'left-fast') {
                 this.currentPage = 0;
-                navigation.components.map(button =>
-                    button.data.custom_id.startsWith('left') ?
-                    button.setDisabled(true)
-                    : button.setDisabled(false),
-                );
+                navigation.components.map(button => button.data.custom_id.startsWith('left') ? button.setDisabled(true) : button.setDisabled(false));
+
                 return await i.update({ embeds: [this._embeds[this.currentPage]], components: [navigation] });
-                // update(i, this._embeds, this.currentPage, checkPage(this.currentPage, components, len));
-            }
-            else if (i.customId === 'trash') {
+            } else if (i.customId === 'trash') {
                 i.update({ components: [] });
                 collector.stop();
             }
         });
 
         collector.on('end', () => {
-            navigation.components.map(button => button.setDisabled(true));
-            if (!this.interaction) {
-                msg.edit({ components: [] });
-            }
-            else {
-                this.commandType.editReply({ components: [] });
-            }
+            navigation.components.map((button) => button.setDisabled(true));
+            !this.interaction ? msg.edit({ components: [] }) : this.commandType.editReply({ components: [] });
         });
     }
 
-    // These are utility functions - useful for people who need this info in things such as callbacks :)
-    getLength() {
+    /**
+     * Get the current length of embeds
+     * @returns {Number}
+     */
+    get getLength() {
         return this._embeds.length;
     }
-    getPage() {
+
+    /**
+     * Get the current page number
+     * @returns {Number}
+     */
+    get getPage() {
         return this.currentPage;
     }
+
+    /**
+     * Set the current page
+     * @param {Number} page - Parameter of the page number
+     * @returns {void}
+     */
     setPage(page) {
         this.currentPage = page;
-        return this.getPage();
     }
 }
-
-module.exports = PaginationBuilder;

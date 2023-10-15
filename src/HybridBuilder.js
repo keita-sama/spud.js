@@ -6,39 +6,46 @@ const paginationButtonMap = {
     'previous': 'left',
     'next': 'right',
     'last': 'right-fast',
-    'trash': 'trash' // This is lazy I know;
+    'trash': 'trash',
 };
 
-// Hybrids are a cool mixture of Menu & Pagination.
-class HybridBuilder extends Builder {
+module.exports = class HybridBuilder extends Builder {
+    /**
+     * Add custom options to the builder
+     * @param {*} input - Options to be specified
+     */
     constructor(input) {
         super(input);
         this.components = [];
         this._embeds = [];
         this.buttons = {
-            trash: new ButtonBuilder().setCustomId('trash').setEmoji('🗑').setStyle('Danger'), // createButton('trash', '⛔', 'Danger'),
-            right: new ButtonBuilder().setCustomId('right').setEmoji('▶').setStyle('Primary'), //  createButton('right', '▶', 'Primary'),
-            last: new ButtonBuilder().setCustomId('right-fast').setEmoji('⏩').setStyle('Primary'), //  createButton('right-fast', '⏭', 'Primary'),
-            left: new ButtonBuilder().setCustomId('left').setEmoji('◀').setStyle('Primary').setDisabled(true), //  createButton('left', '◀', 'Primary'),
-            first: new ButtonBuilder().setCustomId('left-fast').setEmoji('⏪').setStyle('Primary').setDisabled(true), //  createButton('left-fast', '⏮', 'Primary'),
+            trash: new ButtonBuilder().setCustomId('trash').setEmoji('🗑').setStyle('Danger'),
+            right: new ButtonBuilder().setCustomId('right').setEmoji('▶').setStyle('Primary'),
+            last: new ButtonBuilder().setCustomId('right-fast').setEmoji('⏩').setStyle('Primary'),
+            left: new ButtonBuilder().setCustomId('left').setEmoji('◀').setStyle('Primary').setDisabled(true),
+            first: new ButtonBuilder().setCustomId('left-fast').setEmoji('⏪').setStyle('Primary').setDisabled(true),
         };
         this.len = this.getGroupLength;
         this.currentPage = 0;
         this.placeholder = 'Click here to change the group.';
         this.allowedEditButtonNames = ['right', 'left'];
     }
+
     /**
-     * Adds a extra button that can be used to end the current pagination
-     * @param {Boolean} bin - Determines whether this pagination has a trashbin.
+     * Add a trash bin button to the pagination
+     * @param {Boolean} bin - Parameter to toggle the trash bin button
+     * @returns {PaginationBuilder}
      */
     trashBin(bin) {
         this.trashBin = bin;
         this.allowedEditButtonNames.push('trash');
         return this;
     }
+
     /**
-     * Adds fast skipping
-     * @param {Boolean} fastSkip - Determines whether this pagination can skip to the first and last pages.
+     * Adds fast skipping to the pagination
+     * @param {Boolean} fastSkip - Parameter to toggle the fast skip buttons
+     * @returns {PaginationBuilder}
      */
     fastSkip(fastSkip) {
         this.fastSkip = fastSkip;
@@ -46,52 +53,70 @@ class HybridBuilder extends Builder {
         this.allowedEditButtonNames.push('last');
         return this;
     }
+
     /**
-     * Sets the initial embeds
-     * @param {EmbedBuilder[]} groups - The embeds that is initialized with the pagination.
+     * Set the initial embeds
+     * @param {EmbedBuilder[]} groups - The embeds that is initialized with the pagination
+     * @returns {HybridBuilder}
      */
     setGroups(groups) {
-        this.currentGroup = groups[0].name; // Set the first group to the first provided group
+        this.currentGroup = groups[0].name;
         this._groups = groups;
         return this;
     }
+
+    /**
+     * Set the placeholder text of the menu
+     * @param {String} placeholder - Parameter of the placeholder text
+     * @returns {MenuBuilder}
+     */
     setPlaceholder(placeholder) {
         this.placeholder = placeholder;
         return this;
     }
+
+    /**
+     * Edit a button within the pagination
+     * @param {String} name - Parameter of the name of the button you want to edit
+     * @param {ButtonBuilder | { style?: number | string, emoji?: string, label?: string }} style - Parameter of the button or style to be edited
+     * @throws {SpudJSError} If parameter name isn't valid
+     * @throws {SpudJSError} If parameter style has been passed incorrectly
+     * @throws {SpudJSError} If paramter style has invalid parameters in it
+     * @returns {PaginationBuilder}
+     */
     editButton(name, style) {
-        if (!this.allowedEditButtonNames.some(x => x === name)) throw new SpudJSError('You didn\'t provide a valid button to edit! (MAKE SURE THE BUTTON NAMES YOU\'RE USING ARE ENABLED!)');
-        if (!style || !(style instanceof Object) && !(style instanceof ButtonBuilder)) throw new SpudJSError('"style" argument has been passed incorrectly!');
-        if (!['style', 'emoji', 'label'].some(x => x in style)) throw new SpudJSError('Invalid parameters given! Make sure you pass your style with one of the following properties "emoji", "style", "label"');
+        if (!this.allowedEditButtonNames.some(x => x === name)) throw new SpudJSError('Invalid button name to edit');
+        else if (!style || !(style instanceof Object) && !(style instanceof ButtonBuilder)) throw new SpudJSError('Argument style has been passed incorrectly');
+        else if (!['style', 'emoji', 'label'].some(x => x in style)) throw new SpudJSError('Invalid parameters given');
+
         const button = this.buttons[paginationButtonMap[name]];
 
-        if (style instanceof ButtonBuilder) {
-            // Override button if one was provided;
-            this.button[paginationButtonMap[name]] = style;
-        }
+        if (style instanceof ButtonBuilder) this.button[paginationButtonMap[name]] = style;
         else {
-            if ('style' in style) {
-                button.setStyle(typeof style['style'] === 'number' ? style['style'] : stylesMap[style['style']]);
-            }
-            if ('emoji' in style) {
-                button.setEmoji(style['emoji']);
-            }
-            if ('label' in style) {
-                button.setLabel(style['label']);
-            }
+            if ('style' in style) button.setStyle(typeof style['style'] === 'number' ? style['style'] : stylesMap[style['style']]);
+            if ('emoji' in style) button.setEmoji(style['emoji']);
+            if ('label' in style) button.setLabel(style['label']);
         }
-        // console.log(this.buttons[name].data);
+
         return this;
     }
 
-    getCurrentEmbed() {
+    /**
+     * Get the current embed
+     * @returns {EmbedBuilder}
+     */
+    get getCurrentEmbed() {
         return this._groups.find(x => x.name === this.currentGroup).embeds[this.currentPage];
     }
+
     /**
-     * Handles the entire interaction
+     * Sends & handles the pagination
+     * @param {Function} callback
+     * @returns {void}
      */
     async send(callback) {
         const { filter, max, time } = this;
+
         const options = this._groups.map(option => {
             return {
                 label: option.name,
@@ -108,20 +133,17 @@ class HybridBuilder extends Builder {
         );
         const navigationPaging = new ActionRowBuilder().addComponents(...this.components);
 
-        if (this.trashBin === true) {
-            navigationPaging.components.push(this.buttons.left, this.buttons.trash, this.buttons.right);
-        }
-        else {
-            navigationPaging.components.push(this.buttons.left, this.buttons.right);
-        }
+        this.trashbin === true ?
+            navigation.components.push(this.buttons.left, this.buttons.trash, this.buttons.right) :
+            navigation.components.push(this.buttons.left, this.buttons.right);
+
         if (navigationPaging.fastSkip === true) {
             navigationPaging.components.unshift(this.buttons.first);
             navigationPaging.components.push(this.buttons.last);
         }
         
         let totalPages = this.getGroupLength;
-        
-        let msg;
+        let msg = null;
 
         if (!this.interaction) {
             msg = await this.commandType.reply({
@@ -144,17 +166,12 @@ class HybridBuilder extends Builder {
         collector.on('collect', async (i) => {
             if (callback) {
                 const resultOfCallback = callback(i, this, collector);
-                // Allows callbacks to also skip pagination execution
-                if (resultOfCallback === 'RETURN') { 
-                    return;
-                }
+                if (resultOfCallback === 'RETURN') return;
             }
 
             totalPages = this.getGroupLength();
 
-            if (this.idle === true) {
-                collector.resetTimer();
-            }
+            if (this.idle === true) collector.resetTimer();
 
             if (i.customId === 'spud-select-group') {
                 this.currentGroup = i.values[0];
@@ -164,66 +181,33 @@ class HybridBuilder extends Builder {
                     embeds: [this.getCurrentEmbed()],
                     components: [navigationMenu, navigationPaging]
                 });
-                
             }
 
             if (i.customId === 'right') {
                 this.currentPage++;
-                if (this.currentPage >= totalPages) {
-                    navigationPaging.components.map(button =>
-                        button.data.custom_id.startsWith('right') ?
-                        button.setDisabled(true)
-                        : button.setDisabled(false),
-                    );
-                } else navigationPaging.components.map(button => button.setDisabled(false));
 
-                return await i.update({
-                    embeds: [this.getCurrentEmbed()],
-                    components: [navigationMenu, navigationPaging]
-                });
-            }
-            else if (i.customId === 'left') {
+                if (this.currentPage >= totalPages) navigation.components.map((button) => button.data.custom_id.startsWith('right') ? button.setDisabled(true) : button.setDisabled(false));
+                else navigation.components.map(button => button.setDisabled(false));
+
+                return await i.update({ embeds: [this._embeds[this.currentPage]], components: [navigation] });
+            } else if (i.customId === 'left') {
                 this.currentPage--;
-                if (this.currentPage === 0) {
-                    navigationPaging.components.map(button =>
-                        button.data.custom_id.startsWith('left') ?
-                        button.setDisabled(true)
-                        : button.setDisabled(false),
-                    );
-                } else navigationPaging.components.map(button => button.setDisabled(false));
 
-                return await i.update({
-                    embeds: [this.getCurrentEmbed()],
-                    components: [navigationMenu, navigationPaging]
-                });
-            }
-            else if (i.customId === 'right-fast') {
-                this.currentPage = this.getGroupLength();
+                if (this.currentPage === 0) navigation.components.map(button => button.data.custom_id.startsWith('left') ? button.setDisabled(true) : button.setDisabled(false));
+                else navigation.components.map(button => button.setDisabled(false));
 
-                navigationPaging.components.map(button =>
-                    button.data.custom_id.startsWith('right') ?
-                    button.setDisabled(true)
-                    : button.setDisabled(false),
-                );
+                return await i.update({ embeds: [this._embeds[this.currentPage]], components: [navigation] });
+            } else if (i.customId === 'right-fast') {
+                this.currentPage = totalPages;
+                navigation.components.map(button => button.data.custom_id.startsWith('right') ? button.setDisabled(true) : button.setDisabled(false));
 
-                return await i.update({
-                    embeds: [this.getCurrentEmbed()],
-                    components: [navigationMenu, navigationPaging]
-                });
-            }
-            else if (i.customId === 'left-fast') {
+                return await i.update({ embeds: [this._embeds[this.currentPage]], components: [navigation] });
+            } else if (i.customId === 'left-fast') {
                 this.currentPage = 0;
-                navigationPaging.components.map(button =>
-                    button.data.custom_id.startsWith('right') ?
-                    button.setDisabled(true)
-                    : button.setDisabled(false),
-                );
-                return await i.update({
-                    embeds: [this.getCurrentEmbed()],
-                    components: [navigationMenu, navigationPaging]
-                });
-            }
-            else if (i.customId === 'trash') {
+                navigation.components.map(button => button.data.custom_id.startsWith('left') ? button.setDisabled(true) : button.setDisabled(false));
+
+                return await i.update({ embeds: [this._embeds[this.currentPage]], components: [navigation] });
+            } else if (i.customId === 'trash') {
                 i.update({ components: [] });
                 collector.stop();
             }
@@ -238,14 +222,20 @@ class HybridBuilder extends Builder {
             }
         });
     }
-    
-    // Util functions
-    getLength() {
+
+    /**
+     * Get the length of groups
+     * @returns {Number}
+     */
+    get getLength() {
         return this._groups.length;
     }
-    getGroupLength() {
+
+    /**
+     * Get the group embeds' length
+     * @returns {Number}
+     */
+    get getGroupLength() {
         return this._groups.find(x => x.name === this.currentGroup).embeds.length - 1;
     }
 }
-
-module.exports = HybridBuilder;

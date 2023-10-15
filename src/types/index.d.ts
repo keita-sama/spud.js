@@ -1,6 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 
-type PaginationButtons = 'next' | 'previous' | 'last' | 'first' | 'trash'
+type PaginationButtons = 'next' | 'previous' | 'last' | 'first' | 'trash';
 
 export interface MenuOption {
     label: string;
@@ -12,7 +12,7 @@ export interface MenuOption {
 }
 
 declare class Builder {
-    constructor(message: string);
+    constructor(commandType: string);
 
     disableMention(mention: boolean): this;
     setTime(duration: number): this;

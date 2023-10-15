@@ -1,89 +1,124 @@
-const { correctType } = require('./Utils');
-const { Message, ChatInputCommandInteraction } = require('discord.js');
+const { Message, ChatInputCommandInteraction, CommandInteraction } = require('discord.js');
 const SpudJSError = require('./errors/SpudJSError');
 
-class Builder {
+/**
+ * @param {String} type 
+ * @param {*} given 
+ * @returns {Boolean}
+ */
+function correctType(type, given) {
+    return (typeof given === type);
+}
+
+module.exports = class Builder {
+    /**
+     * Add the command type options
+     * @param {*} commandType - Command type to be specified
+     */
     constructor(commandType) {
         this.commandType = commandType;
+
         if (commandType instanceof ChatInputCommandInteraction) {
             this.interaction = true;
             this.interactionOptions = { type: 'reply' };
-        }
-        else if (commandType instanceof Message) {
-            this.interaction = false;
-        }
+        } else if (commandType instanceof Message) this.interaction = false;
+
         this.shouldMention = true;
         this.idle = true;
-        // ! TODO: MAKE FILTER WORK WITH INTERACTIONS AND MESSAGES
+
+        /**
+         * @todo Make filter work hybridly with interactions and messages
+         * @param {CommandInteraction} interaction 
+         * @returns {void}
+         */
         this.filter = (interaction) => interaction.user.id === commandType.author.id;
     }
+
     /**
-     * @param {Number} durationSeconds - How long this interaction lasts
+     * Set the interaction duration
+     * @param {Number} durationSeconds - Parameter of how long the interaction lasts
+     * @throws {SpudJSError} If the duractionSeconds parameter isn't a number
+     * @returns {Builder}
      */
     setTime(durationSeconds) {
-        if (!correctType('number', durationSeconds)) {
-            throw new SpudJSError(`Expected "number", got ${typeof durationSeconds}`);
-        }
+        if (!correctType('number', durationSeconds)) throw new SpudJSError(`Expected "number", got ${typeof durationSeconds}`);
+
         this.time = durationSeconds;
         return this;
     }
+
     /**
-     * @param {Function} filter - How long this interaction lasts
+     * Set the interaction filter
+     * @param {Function} filter - Parameter to handle interaction filtering
+     * @throws {SpudJSError} If the filter parameter isn't a function
+     * @returns {Builder}
      */
-    setFilter(filter, replyOptions = {}) {
-        if (!correctType('function', filter)) {
-            throw new SpudJSError(`Expected "function", got ${typeof filter}`);
-        }
+    setFilter(filter) {
+        if (!correctType('function', filter)) throw new SpudJSError(`Expected "function", got ${typeof filter}`);
+
         this.filter = filter;
         return this;
     }
+
     /**
-     * @param {Number} maxInteractions - How many times this interaction can be used
+     * Set the max interaction limit
+     * @param {Number} maxInteractions - Parameter of how many times the interaction can be used
+     * @throws {SpudJSError} If the maxInteractions parameter isn't a number
+     * @returns {Builder}
      */
     setMax(maxInteractions) {
-        if (!correctType('number', maxInteractions)) {
-            throw new SpudJSError(`Expected "number", got ${typeof maxInteractions}`);
-        }
+        if (!correctType('number', maxInteractions)) throw new SpudJSError(`Expected "number", got ${typeof maxInteractions}`);
+
         this.max = maxInteractions;
         return this;
     }
+
     /**
-     * @param {Boolean} idleSeconds - Determines if this interaction can idle
+     * Set if the interaction can idle
+     * @param {Boolean} idle - Parameter to determine if this interaction can idle
+     * @throws {SpudJSError} If the idle parameter isn't a boolean
+     * @returns {Builder}
      */
     setIdle(idle) {
-        if (!correctType('boolean', idle)) {
-            throw new SpudJSError(`Expected "boolean", got ${typeof idle}`);
-        }
+        if (!correctType('boolean', idle)) throw new SpudJSError(`Expected "boolean", got ${typeof idle}`);
+
         this.idle = idle;
         return this;
     }
+
     /**
-     * @param {String} content - Sets the content used in the reply.
+     * Set the content used in the reply
+     * @param {String} content - Parameter of the reply content.
+     * @throws {SpudJSError} If the content parameter isn't a string
+     * @returns {Builder}
      */
     setContent(content) {
-        if (!correctType('string', content)) {
-            throw new SpudJSError(`Expected "string", got ${typeof idle}`);
-        }
+        if (!correctType('string', content)) throw new SpudJSError(`Expected "string", got ${typeof idle}`);
+
         this.content = content;
         return this;
     }
+
     /**
-     * @param {Boolean} mention - Determines if this interaction will mention the replied user
+     * Set if the bot should disable mentioning when replying to a user
+     * @param {Boolean} mention - Parameter to determine if the interaction should mention
+     * @returns {Builder}
      */
     disableMention(mention = true) {
         this.shouldMention = mention;
         return this;
     }
+
     /**
-     * Makes this menu use interactions instead of messages.
-     * @param {*} interaction - Interaction used (if you want that)
+     * Set if this menu should use interactions instead of messages.
      * @param {*} options - Options for the interaction
+     * @throws {SpudJSError} If the options parameter isn't an object
+     * @returns {Builder}
      */
     setInteraction(options) {
         if (!correctType('object', options)) throw new SpudJSError(`Expected "object", got ${typeof placeholder}`);
         this.interactionOptions = options;
+
         return this;
     }
 }
-
-module.exports = Builder;
