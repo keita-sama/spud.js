@@ -49,7 +49,7 @@ module.exports = class Builder {
 
     /**
      * Set the interaction filter
-     * @param {Function} [filter] - Parameter to handle interaction filtering
+     * @param {Function} filter - Parameter to handle interaction filtering
      * @throws {SpudJSError} If the filter parameter isn't a function
      * @returns {Builder}
      */
@@ -117,8 +117,8 @@ module.exports = class Builder {
      */
     setInteraction(options) {
         if (!correctType('object', options)) throw new SpudJSError(`Expected "object", got ${typeof placeholder}`);
-        this.interactionOptions = options;
 
+        this.interactionOptions = options;
         return this;
     }
 }
