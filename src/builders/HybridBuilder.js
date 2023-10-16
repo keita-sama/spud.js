@@ -85,9 +85,9 @@ module.exports = class HybridBuilder extends Builder {
      * @returns {PaginationBuilder}
      */
     editButton(name, style) {
-        if (!this.allowedEditButtonNames.some(x => x === name)) throw new SpudJSError('Invalid button name to edit');
-        else if (!style || !(style instanceof Object) && !(style instanceof ButtonBuilder)) throw new SpudJSError('Argument style has been passed incorrectly');
-        else if (!['style', 'emoji', 'label'].some(x => x in style)) throw new SpudJSError('Invalid parameters given');
+        if (!this.allowedEditButtonNames.some(x => x === name)) throw new SpudJSError('ParameterValue', 'Invalid button name to edit');
+        else if (!style || !(style instanceof Object) && !(style instanceof ButtonBuilder)) throw new SpudJSError('ParameterValue', 'Parameter "style" has been passed incorrectly');
+        else if (!['style', 'emoji', 'label'].some(x => x in style)) throw new SpudJSError('ParameterValue', 'Invalid parameters given');
 
         const button = this.buttons[paginationButtonMap[name]];
 
@@ -238,4 +238,4 @@ module.exports = class HybridBuilder extends Builder {
     getGroupLength() {
         return this._groups.find(x => x.name === this.currentGroup).embeds.length - 1;
     }
-}
+};

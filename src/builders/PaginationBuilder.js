@@ -69,9 +69,9 @@ module.exports = class PaginationBuilder extends Builder {
      * @returns {PaginationBuilder}
      */
     setEmbeds(embeds) {
-        if (!(embeds instanceof Array)) throw new SpudJSError(`Expected "Array", got ${typeof embeds}`);
+        if (!(embeds instanceof Array)) throw new SpudJSError('ParameterTypee', `Expected "Array", got ${typeof embeds}`);
         else embeds.forEach((embed) => {
-            if (!(embed instanceof EmbedBuilder) && typeof embed !== 'object') throw new SpudJSError('Incorrect argument passed, must be either "EmbedBuilder" or "Object"');
+            if (!(embed instanceof EmbedBuilder) && typeof embed !== 'object') throw new SpudJSError('ParameterType', 'Incorrect argument passed, must be either "EmbedBuilder" or "Object"');
         });
 
         this._embeds = embeds;
@@ -86,7 +86,7 @@ module.exports = class PaginationBuilder extends Builder {
      * @returns {PaginationBuilder}
      */
     addEmbed(embed) {
-        if (!(embed instanceof EmbedBuilder)) throw new SpudJSError(`Expected "EmbedBuilder", got ${typeof embed}`);
+        if (!(embed instanceof EmbedBuilder)) throw new SpudJSError('ParameterType', `Expected "EmbedBuilder", got ${typeof embed}`);
         this._embeds.push(embed);
         return this;
     }
@@ -97,7 +97,6 @@ module.exports = class PaginationBuilder extends Builder {
      * @returns {Embeds[]}
      */
     getEmbeds() {
-        if (this._embeds.length === 0) throw new SpudJSError('There is no embeds, add some using setEmbeds/addEmbed!');
         return this._embeds;
     }
 
@@ -111,9 +110,9 @@ module.exports = class PaginationBuilder extends Builder {
      * @returns {PaginationBuilder}
      */
     editButton(name, style) {
-        if (!this.allowedEditButtonNames.some(x => x === name)) throw new SpudJSError('Invalid button name to edit');
-        else if (!style || !(style instanceof Object) && !(style instanceof ButtonBuilder)) throw new SpudJSError('Argument style has been passed incorrectly');
-        else if (!['style', 'emoji', 'label'].some(x => x in style)) throw new SpudJSError('Invalid parameters given');
+        if (!this.allowedEditButtonNames.some(x => x === name)) throw new SpudJSError('ParameterValue', 'Invalid button name to edit');
+        else if (!style || !(style instanceof Object) && !(style instanceof ButtonBuilder)) throw new SpudJSError('ParameterValue', 'Argument style has been passed incorrectly');
+        else if (!['style', 'emoji', 'label'].some(x => x in style)) throw new SpudJSError('ParameterValue', 'Invalid parameters given');
 
         const button = this.buttons[paginationButtonMap[name]];
 
@@ -237,4 +236,4 @@ module.exports = class PaginationBuilder extends Builder {
     setPage(page) {
         this.currentPage = page;
     }
-}
+};

@@ -64,4 +64,4 @@ module.exports = class MenuOption {
         this.emoji = emoji;
         return this;
     }
-}
+};

@@ -41,7 +41,7 @@ module.exports = class Builder {
      * @returns {Builder}
      */
     setTime(durationSeconds) {
-        if (!correctType('number', durationSeconds)) throw new SpudJSError(`Expected "number", got ${typeof durationSeconds}`);
+        if (!correctType('number', durationSeconds)) throw new SpudJSError('ParameterType', `Expected "number", got ${typeof durationSeconds}`);
 
         this.time = durationSeconds;
         return this;
@@ -54,7 +54,7 @@ module.exports = class Builder {
      * @returns {Builder}
      */
     setFilter(filter) {
-        if (!correctType('function', filter)) throw new SpudJSError(`Expected "function", got ${typeof filter}`);
+        if (!correctType('function', filter)) throw new SpudJSError('ParameterType', `Expected "function", got ${typeof filter}`);
 
         this.filter = filter;
         return this;
@@ -67,7 +67,7 @@ module.exports = class Builder {
      * @returns {Builder}
      */
     setMax(maxInteractions) {
-        if (!correctType('number', maxInteractions)) throw new SpudJSError(`Expected "number", got ${typeof maxInteractions}`);
+        if (!correctType('number', maxInteractions)) throw new SpudJSError('ParameterType', `Expected "number", got ${typeof maxInteractions}`);
 
         this.max = maxInteractions;
         return this;
@@ -80,7 +80,7 @@ module.exports = class Builder {
      * @returns {Builder}
      */
     setIdle(idle = false) {
-        if (!correctType('boolean', idle)) throw new SpudJSError(`Expected "boolean", got ${typeof idle}`);
+        if (!correctType('boolean', idle)) throw new SpudJSError('ParameterType', `Expected "boolean", got ${typeof idle}`);
 
         this.idle = idle;
         return this;
@@ -93,7 +93,7 @@ module.exports = class Builder {
      * @returns {Builder}
      */
     setContent(content) {
-        if (!correctType('string', content)) throw new SpudJSError(`Expected "string", got ${typeof idle}`);
+        if (!correctType('string', content)) throw new SpudJSError('ParameterType', `Expected "string", got ${typeof idle}`);
 
         this.content = content;
         return this;
@@ -116,9 +116,9 @@ module.exports = class Builder {
      * @returns {Builder}
      */
     setInteraction(options) {
-        if (!correctType('object', options)) throw new SpudJSError(`Expected "object", got ${typeof placeholder}`);
+        if (!correctType('object', options)) throw new SpudJSError('ParameterType', `Expected "object", got ${typeof placeholder}`);
 
         this.interactionOptions = options;
         return this;
     }
-}
+};

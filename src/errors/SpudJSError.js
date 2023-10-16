@@ -1,17 +1,14 @@
-class SpudJSError extends Error {
+module.exports = class SpudJSError extends Error {
     /**
-     * @param {String} message - Error message
+     * @param {String | number} code - Parameter of the error code
+     * @param {String} message - Parameter of the error message
      */
-    constructor(message) {
+    constructor(code, message) {
         super(message);
-        Object.setPrototypeOf(this, new.target.prototype);
 
-        this.name = this.constructor.name;
+        this.name = `SpudJSError [${code}]`;
+        this.code = code;
 
-        if (Error.captureStackTrace) {
-            Error.captureStackTrace(this, this.constructor);
-        }
+        Error.captureStackTrace(this, SpudJSError);
     }
-}
-
-module.exports = SpudJSError;
+};
