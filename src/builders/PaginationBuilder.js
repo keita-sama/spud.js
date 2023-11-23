@@ -28,9 +28,9 @@ module.exports = class PaginationBuilder extends Builder {
         this._embeds = [];
         this.buttons = {
             trash: new ButtonBuilder().setCustomId('trash').setEmoji('🗑').setStyle('Danger'),
-            right: new ButtonBuilder().setCustomId('right').setEmoji('▶').setStyle('Primary'),
+            next: new ButtonBuilder().setCustomId('right').setEmoji('▶').setStyle('Primary'),
             last: new ButtonBuilder().setCustomId('right-fast').setEmoji('⏩').setStyle('Primary'),
-            left: new ButtonBuilder().setCustomId('left').setEmoji('◀').setStyle('Primary').setDisabled(true),
+            previous: new ButtonBuilder().setCustomId('left').setEmoji('◀').setStyle('Primary').setDisabled(true),
             first: new ButtonBuilder().setCustomId('left-fast').setEmoji('⏪').setStyle('Primary').setDisabled(true),
         };
         this.len = this.getLength();
@@ -46,6 +46,7 @@ module.exports = class PaginationBuilder extends Builder {
     trashBin(trashBin = false) {
         this.trashBin = trashBin;
         this.allowedEditButtonNames.push('trash');
+
         return this;
     }
 
@@ -56,8 +57,10 @@ module.exports = class PaginationBuilder extends Builder {
      */
     fastSkip(fastSkip = false) {
         this.fastSkip = fastSkip;
+
         this.allowedEditButtonNames.push('last');
         this.allowedEditButtonNames.push('first');
+
         return this;
     }
 
@@ -69,9 +72,14 @@ module.exports = class PaginationBuilder extends Builder {
      * @returns {PaginationBuilder}
      */
     setEmbeds(embeds) {
-        if (!(embeds instanceof Array)) throw new SpudJSError('ParameterTypee', `Expected "Array", got ${typeof embeds}`);
-        else embeds.forEach((embed) => {
-            if (!(embed instanceof EmbedBuilder) && typeof embed !== 'object') throw new SpudJSError('ParameterType', 'Incorrect argument passed, must be either "EmbedBuilder" or "Object"');
+        if (!(embeds instanceof Array)) {
+            throw new SpudJSError('ParameterTypee', `Expected "Array", got ${typeof embeds}`);
+        }
+        
+        embeds.forEach((embed) => {
+            if (!(embed instanceof EmbedBuilder) && typeof embed !== 'object') {
+                throw new SpudJSError('ParameterType', 'Incorrect argument passed, must be either "EmbedBuilder" or "Object"')
+            };
         });
 
         this._embeds = embeds;
@@ -98,6 +106,22 @@ module.exports = class PaginationBuilder extends Builder {
      */
     getEmbeds() {
         return this._embeds;
+    }
+
+    /**
+     * Set custom components.
+     * 
+     * @param {*[]} components - The components for the pagination.
+     * @param {Function} componentHandler - A component handler for the pagination.
+     * @returns {PaginationBuilder}
+     */
+    setCustomComponents(components = [], componentHandler) {
+        if (!components.length) return this;
+
+        this.customComponents = components;
+        this.customComponentHandler = componentHandler;
+
+        return this;
     }
 
     /**
@@ -133,20 +157,36 @@ module.exports = class PaginationBuilder extends Builder {
      */
     async send(callback) {
         const { filter, max, time } = this;
+
         const navigation = new ActionRowBuilder();
+        const customComponents = new ActionRowBuilder();
 
         this.trashbin === true ?
-            navigation.components.push(this.buttons.left, this.buttons.trash, this.buttons.right) :
-            navigation.components.push(this.buttons.left, this.buttons.right);
+            navigation.components.push(this.buttons.previous, this.buttons.trash, this.buttons.next) :
+            navigation.components.push(this.buttons.previous, this.buttons.next);
 
         if (this.fastSkip === true) {
             navigation.components.unshift(this.buttons.first);
             navigation.components.push(this.buttons.last);
         }
 
+        console.log(this.customComponents);
+        if (this.customComponents) customComponents.components = this.customComponents;
+
         this.currentPage = 0;
 
         let totalPages = this.getLength();
+
+        const paginationComponents = [navigation];
+
+        if (customComponents.components.length)  {
+            paginationComponents.push(customComponents);
+        }
+
+        console.log(customComponents);
+        console.log(paginationComponents);
+        // console.log(navigation);
+        // Initialise the message variable (Will be used for collector)
         let msg = null;
 
         if (this.interaction === true) {
@@ -216,8 +256,8 @@ module.exports = class PaginationBuilder extends Builder {
      * Get the current length of embeds
      * @returns {Number}
      */
-    getLength() {
-        return this._embeds.length;
+    getTotalPages() {
+        return this._embeds.length - 1;
     }
 
     /**
@@ -235,5 +275,6 @@ module.exports = class PaginationBuilder extends Builder {
      */
     setPage(page) {
         this.currentPage = page;
+        return this.getPage();
     }
 };

@@ -36,37 +36,46 @@ module.exports = class MenuBuilder extends Builder {
      * Set the initial options
      * @param {MenuOption[]} options - Parameter of the select menu options
      * @throws {SpudJSError} If the options parameter isn't an array
-     */
-    setMenuOptions(options) {
-        if (!(options instanceof Array)) throw new SpudJSError('ParameterType', `Expected "Array", got ${typeof options}`);
-        else {
-            options.forEach((option) => {
-                if (!(option instanceof MenuOption) && typeof option !== 'object') throw new SpudJSError('ParameterType', 'Incorrect argument passed, must be either "MenuOption" or "Object"');
-            });
-
-            this._options = options;
-            return this;
-        }
-    }
-
-    /**
-     * Add an option to your select menu
-     * @param {*} input - Parameter used to generate the option
-     * @throws {SpudJSError} If the input parameter is not specified
      * @returns {MenuBuilder}
      */
-    addMenuOption(input) {
-        if (!input) throw new SpudJSError('ParameterValue', 'Missing parameter "input"');
+    setMenuOptions(options) {
+        if (!(options instanceof Array)) {
+            throw new SpudJSError('ParameterType', `Expected "Array", got ${typeof options}`);
+        }
 
-        if (typeof input === 'function') this._options.push(input(new MenuOption()));
-        else if (typeof input === 'object' || input instanceof MenuOption) this._options.push(input);
+        options.forEach((option) => {
+            if (!(option instanceof MenuOption) && typeof option !== 'object') {
+                throw new SpudJSError('ParameterType', 'Incorrect argument passed, must be either "MenuOption" or "Object"');
+            }
+        });
+
+        this._options = options;
 
         return this;
     }
 
     /**
+     * Add an option to your select menu
+     * @param {function | object} input - Parameter used to generate the option
+     * @throws {SpudJSError} If the input parameter is not specified
+     * @returns {MenuBuilder}
+     */
+    addMenuOption(input) {
+        if (!input) {
+            throw new SpudJSError('ParameterValue', 'Missing parameter "input"');
+        }
+
+        if (typeof input === 'function') {
+            this._options.push(input(new MenuOption()));
+            return this;
+        } else if (typeof input === 'object' || input instanceof MenuOption) {
+            this._options.push(input);
+        }
+    }
+
+    /**
      * Get the current menu options
-     * @returns {*[] | MenuOption[]}
+     * @returns {*[]}
      */
     getOptions() {
         return this._options;
@@ -120,16 +129,29 @@ module.exports = class MenuBuilder extends Builder {
                 if (resultOfCallback === 'RETURN') return;
             }
 
-            if (this.idle) await collector.resetTimer();
+            if (this.idle) {
+                await collector.resetTimer();
+            }
 
             await m.update({
-                embeds: [this._options.find(option => createIdFromLabel(option.label) === m.values[0]).embed],
+                embeds: [
+                    this._options.find((option) => createIdFromLabel(option.label) === m.values[0]).embed,
+                ],
             });
         });
 
         collector.on('end', () => {
-            if (!this.interaction) msg.edit({ components: [navigation.components.map(x => x.setPlaceholder('Expired').setDisabled(true))] });
-            else this.commandType.editReply({ components: [navigation.components.map(x => x.setPlaceholder('Expired').setDisabled(true))] });
+            !this.interaction ?
+                msg.edit({
+                    components: [
+                        navigation.components.map(x => x.setPlaceholder('Expired').setDisabled(true)),
+                    ],
+                }) :
+                this.commandType.editReply({
+                    components: [
+                        navigation.components.map((x) => x.setPlaceholder('Expired').setDisabled(true)),
+                    ],
+                });
         });
     }
 };
