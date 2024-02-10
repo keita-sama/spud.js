@@ -1,43 +1,20 @@
 {
   "name": "spud.js",
-  "description": "A pagination-focused library for discord.js",
-  "version": "3.0.1",
-  "main": "./src/index.js",
+  "version": "3.1.2",
+  "main": "index.js",
   "types": "./src/types/index.d.ts",
   "scripts": {
-    "start": "node src",
-    "lint": "eslint .",
-    "fix": "eslint . --fix",
-    "test": "node src && eslint ."
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [
-    "spudjs",
-    "potato",
-    "nodejs",
-    "discordjs",
-    "pagination"
-  ],
-  "contributors": [
-    "Keita <github.com/keita-sama>",
-    "Zeptar <github.com/thezeptar>",
-    "Spud <github.com/MrPotato30>"
-  ],
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/keita-sama/spud.js"
-  },
-  "bugs": {
-    "url": "https://github.com/keita-sama/spud.js/issues"
-  },
-  "homepage": "https://github.com/keita-sama/spud.js#readme",
-  "engines": {
-    "node": ">=16.19.0"
-  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
   "dependencies": {
+    "axios": "^0.24.0",
     "discord.js": "^14.13.0"
   },
   "devDependencies": {
-    "eslint": "^8.51.0"
+    "eslint": "^8.22.0"
   }
 }

@@ -1,6 +1,6 @@
-import { CommandInteraction, EmbedBuilder, Message } from 'discord.js';
+import type { ButtonBuilder, EmbedBuilder, Interaction } from "discord.js";
 
-type PaginationButtons = 'next' | 'previous' | 'last' | 'first' | 'trash';
+type PaginationButtons = "next" | "previous" | "last" | "first" | "trash";
 
 export interface MenuOption {
     label: string;
@@ -12,19 +12,18 @@ export interface MenuOption {
 }
 
 declare class Builder {
-    constructor(commandType: CommandInteraction | Message);
+    constructor(message: string);
 
-    setTime(durationSeconds: number): this;
+    disableMention(mention: boolean): this;
+    setTime(duration: number): this;
     setFilter(filter: Function): this;
-    setMax(maxInteractions: number): this;
+    setMax(max: number): this;
     setIdle(idle: boolean): this;
     setContent(content: string): this;
-    disableMention(mention: boolean): this;
-    setInteraction(options: any): this;
 }
 
 declare class MenuBuilder extends Builder {
-    constructor(commandType: CommandInteraction | Message);
+    constructor(message: string);
 
     setPlaceholder(placeholder: string): MenuBuilder;
     setMenuOptions(options: MenuOption[] | object): MenuBuilder;
@@ -34,13 +33,16 @@ declare class MenuBuilder extends Builder {
 }
 
 declare class PaginationBuilder extends Builder {
-    constructor(commandType: CommandInteraction | Message);
+    constructor(message: string);
 
     trashBin(bin: boolean): PaginationBuilder;
     fastSkip(fastSkip: boolean): PaginationBuilder;
-    setEmbeds(embeds: EmbedBuilder[] | object): PaginationBuilder;
+    setEmbeds(
+        embeds: EmbedBuilder[] | object,
+        linkedComponents: ButtonBuilder[]
+    ): PaginationBuilder;
     addEmbed(embed: EmbedBuilder | object): PaginationBuilder;
     getEmbeds(): EmbedBuilder[];
     setButton(button: PaginationButtons, updated: Function): PaginationBuilder;
-    send(): void;
+    send(callback: (i: Interaction) => any): void;
 }

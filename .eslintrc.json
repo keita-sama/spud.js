@@ -9,7 +9,6 @@
 	"rules": {
 		"prefer-const": "error",
 		"quotes": ["error", "single"],
-		"semi": ["error", "always"],
-		"eol-last": ["error", "always"]
+		"semi": ["error", "always"]
 	}
 }
