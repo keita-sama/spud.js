@@ -35,7 +35,7 @@ class PaginationBuilder extends Builder {
     /**
      * @param {Boolean} trashBin - Determines whether this pagination has a button to end it.
      */
-    trashBin(trashBin = false) {
+    trashBin(trashBin = true) {
         this.trashBin = trashBin;
         this.allowedEditButtonNames.push('trash');
         return this;
@@ -105,6 +105,8 @@ class PaginationBuilder extends Builder {
         if (!style || !(style instanceof Object) && !(style instanceof ButtonBuilder)) throw new SpudJSError('"style" argument has been passed incorrectly!');
         if (!['style', 'emoji', 'label'].some(x => x in style)) throw new SpudJSError('Invalid parameters given! Make sure you pass your style with one of the following properties "emoji", "style", "label"');
 
+        const button = this.buttons[name];
+
         if (style instanceof ButtonBuilder) {
             // Override button if one was provided;
             this.buttons[name] = style;
@@ -167,7 +169,8 @@ class PaginationBuilder extends Builder {
             msg = await this.commandType[this.interactionOptions.type]({
                 content: this.content,
                 embeds: [this._embeds[this.currentPage]],
-                components: [navigation],
+                components: paginationComponents,
+                allowedMentions: { repliedUser: this.shouldMention },
             });
         }
 
@@ -195,48 +198,29 @@ class PaginationBuilder extends Builder {
             if (i.customId === 'right') {
                 this.currentPage++;
                 if (this.currentPage >= totalPages) {
-                    navigation.components.map(button =>
-                        button.data.custom_id.startsWith('right') ?
-                        button.setDisabled(true)
-                        : button.setDisabled(false),
-                    );
+                    navigation.components.map(button => this._updateComponents(button, 'right'));
                 } else navigation.components.map(button => button.setDisabled(false));
 
                 return await i.update({ embeds: [this._embeds[this.currentPage]], components: [navigation, this.getLinkedComponents()].filter(x=>x) });
-                // update(i, this._embeds, this.currentPage, checkPage(this.currentPage, components, len));
             }
             else if (i.customId === 'left') {
                 this.currentPage--;
                 if (this.currentPage === 0) {
-                    navigation.components.map(button =>
-                        button.data.custom_id.startsWith('left') ?
-                        button.setDisabled(true)
-                        : button.setDisabled(false),
-                    );
+                    navigation.components.map(button => this._updateComponents(button, 'left'));
                 } else navigation.components.map(button => button.setDisabled(false));
 
                 return await i.update({ embeds: [this._embeds[this.currentPage]], components: [navigation, this.getLinkedComponents()].filter(x=>x) });
-                // cupdate(i, this._embeds, this.currentPage, checkPage(this.currentPage, components, len));
+
             }
             else if (i.customId === 'right-fast') {
                 this.currentPage = totalPages;
-                navigation.components.map(button =>
-                    button.data.custom_id.startsWith('right') ?
-                    button.setDisabled(true)
-                    : button.setDisabled(false),
-                );
+                navigation.components.map(button => this._updateComponents(button, 'right'));
                 return await i.update({ embeds: [this._embeds[this.currentPage]], components: [navigation, this.getLinkedComponents()].filter(x=>x) });
-                // update(i, this._embeds, this.currentPage, checkPage(this.currentPage, components, len));
             }
             else if (i.customId === 'left-fast') {
                 this.currentPage = 0;
-                navigation.components.map(button =>
-                    button.data.custom_id.startsWith('left') ?
-                    button.setDisabled(true)
-                    : button.setDisabled(false),
-                );
+                navigation.components.map(button => this._updateComponents(button, 'left'));
                 return await i.update({ embeds: [this._embeds[this.currentPage]], components: [navigation, this.getLinkedComponents()].filter(x=>x) });
-                // update(i, this._embeds, this.currentPage, checkPage(this.currentPage, components, len));
             }
             else if (i.customId === 'trash') {
                 i.update({ components: [] });
@@ -264,12 +248,16 @@ class PaginationBuilder extends Builder {
     }
     getLinkedComponents() {
         if (!this._linkedComponents || this.currentPage > (this._linkedComponents.length - 1)) return undefined;
-        return new ActionRowBuilder()
-            .addComponents([this._linkedComponents[this.currentPage]]);
+        return this._linkedComponents[this.currentPage];
     }
     setPage(page) {
         this.currentPage = page;
         return this.getPage();
+    }
+    _updateComponents(button, name) {
+        button.data.custom_id.startsWith(name) ?
+        button.setDisabled(true)
+        : button.setDisabled(false);
     }
 }
 

@@ -1,5 +1,5 @@
 
-const { Message, ChatInputCommandInteraction } = require('discord.js');
+const { Message, ChatInputCommandInteraction, CommandInteraction } = require('discord.js');
 const SpudJSError = require('./errors/SpudJSError');
 
 class Builder {
@@ -14,8 +14,13 @@ class Builder {
         }
         this.shouldMention = true;
         this.idle = true;
-        // ! TODO: MAKE FILTER WORK WITH INTERACTIONS AND MESSAGES
-        this.filter = (interaction) => interaction.user.id === commandType.author.id;
+        
+        if (commandType instanceof Message) {
+            this.filter = (interaction) => interaction.user.id === commandType.author.id;
+        }
+        else if (commandType instanceof CommandInteraction) {
+            this.filter = (interaction) => interaction.user.id === commandType.user.id;
+        }
     }
     /**
      * @param {Number} durationSeconds - How long this interaction lasts
