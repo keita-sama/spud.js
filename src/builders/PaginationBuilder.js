@@ -194,6 +194,7 @@ module.exports = class PaginationBuilder extends Builder {
                 content: this.content,
                 embeds: [this._embeds[this.currentPage]],
                 components: [navigation],
+                fetchReply: this.interactionOptions.fetchReply ?? false,
             });
         } else {
             msg = await this.commandType.reply({
@@ -201,6 +202,7 @@ module.exports = class PaginationBuilder extends Builder {
                 embeds: [this._embeds[this.currentPage]],
                 components: [navigation],
                 allowedMentions: { repliedUser: this.shouldMention },
+                fetchReply: this.interactionOptions.fetchReply ?? false,
             });
         }
 
