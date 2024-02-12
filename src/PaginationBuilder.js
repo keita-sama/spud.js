@@ -171,6 +171,7 @@ class PaginationBuilder extends Builder {
                 embeds: [this._embeds[this.currentPage]],
                 components: paginationComponents,
                 allowedMentions: { repliedUser: this.shouldMention },
+                fetchReply: this.interactionOptions.fetchReply ?? false,
             });
         }
 
