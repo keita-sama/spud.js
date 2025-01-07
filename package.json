@@ -1,19 +1,17 @@
 {
   "name": "spud.js",
-  "version": "3.1.6",
-  "main": "index.js",
-  "types": "./src/types/index.d.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "discord.js": "^14.13.0"
+  "module": "index.ts",
+  "type": "module",
+  "repository": {
+    "url": "https://github.com/keita-sama/spud.js"
   },
   "devDependencies": {
-    "eslint": "^8.22.0"
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "discord.js": "^14.17.2"
   }
 }
