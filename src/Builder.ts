@@ -1,7 +1,4 @@
 import {
-    ButtonInteraction,
-    ChatInputCommandInteraction,
-    ContextMenuCommandInteraction,
     Message,
     BaseInteraction,
     type Interaction
