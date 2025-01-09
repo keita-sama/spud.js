@@ -1,16 +1,20 @@
-import { Builder } from "./Builder";
+import { Builder, getCorrectBuilder } from "./Builder";
 import {
     Message,
-    ButtonStyle, // TODO: USE THIS
+    ButtonStyle, // TODO: USE THIS [x]
     type Interaction,
     EmbedBuilder,
     ButtonBuilder,
     type SelectMenuType,
     ActionRowBuilder
 } from "discord.js";
+import type { MessageBuilder } from "./MessageBuilder";
+import type { InteractionBuilder } from "./InteractionBuilder";
 
-import { Page } from "./structures/Page";
-import { type PageItem } from "./structures/Page";
+interface Page {
+    embed: EmbedBuilder;
+    components?: ActionRowBuilder;
+}
 
 type ButtonNames = "previous" | "next" | "last" | "first" | "trash";
 
@@ -49,24 +53,30 @@ Could be a link to a shop, a button that opens up yet another menu. Possibilitie
 are endless!
 */
 
-export class PaginationBuilder<T extends Message | Interaction> extends Builder<T> {
+export class PaginationBuilder<T extends Message | Interaction> {
     pages: Page[];
     buttons: object; // FIXME: fix the type;
-    linkedComponents?: (ButtonBuilder | SelectMenuType)[];
+    builder: MessageBuilder | InteractionBuilder;
+
+    // TODO: Fully remove this later, keeping it incase i drop the Page stuff
+    // linkedComponents?: (ButtonBuilder | SelectMenuType)[];
 
     currentPage: number;
     editableButtons: ButtonNames[];
     trashBin: boolean;
     fastSkip: boolean;
 
-    customComponents?: (ButtonBuilder | SelectMenuType)[];
+    // TODO: Similar to the linkedComponents thing, scrapping in favour of Page, keeping just in case
+    //customComponents?: (ButtonBuilder | SelectMenuType)[];
     customComponentHandler?: Function;
 
     constructor(commandType: T) {
-        super(commandType);
+        this.builder = getCorrectBuilder(commandType)
+        Object.assign(this, this.builder);
+
         this.pages = [];
 
-        // TODO: add the buttons
+        // TODO: add the buttons [x]
         this.buttons = buttons;
         this.currentPage = 0;
         this.editableButtons = ["previous", "next"];
@@ -74,16 +84,13 @@ export class PaginationBuilder<T extends Message | Interaction> extends Builder<
         this.fastSkip = false;
     }
 
-    setPages(pages: PageItem[]): this {
-
-        const newPages = pages.map(page => new Page(page));
-        this.pages = newPages;
+    setPages(pages: Page[]): this {
+        this.pages = pages;
         return this;
     }
 
-    addPage(page: PageItem): this {
-        const newPage = new Page(page);
-        this.pages.push(newPage);
+    addPage(page: Page): this {
+        this.pages.push(page);
 
         return this;
     }
@@ -98,6 +105,11 @@ export class PaginationBuilder<T extends Message | Interaction> extends Builder<
     addTrashBin(): this {
         this.trashBin = true;
         this.editableButtons.push("trash");
+        return this;
+    }
+
+    setCustomComponentHandler(handler: (i: Interaction) => unknown): this {
+        this.customComponentHandler = handler;
         return this;
     }
 }
