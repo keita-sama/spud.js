@@ -1,41 +1,69 @@
 import {
-    ButtonInteraction,
-    ChatInputCommandInteraction,
-    ContextMenuCommandInteraction,
     Message,
-    BaseInteraction,
-    type Interaction
+    type Interaction,
+    type MessageCreateOptions
 } from "discord.js";
-import { InteractionBuilder } from "./InteractionBuilder";
-import { MessageBuilder } from "./MessageBuilder";
 
-// generics are kinda cool wtf
+import  { SpudJSError } from './Errors/SpudJSError';
 
-// rip very cool
-// export class Builder<T extends Interaction | Message> {
-//     constructor(commandType: T) {
-//         //Builder.prototype = (commandType instanceof Message ? MessageBuilder : InteractionBuilder)(commandType)
-
-//         if (commandType instanceof Message) {
-//             Builder.prototype = new MessageBuilder(commandType);
-//         }
-//         if (commandType instanceof BaseInteraction) {
-//             Builder.prototype = new InteractionBuilder(commandType);
-//         }
-//     }
-// }
-
-export function getCorrectBuilder(commandType: Interaction | Message) {
-        if (commandType instanceof Message) {
-            return new MessageBuilder(commandType);
-        }
-        if (commandType instanceof BaseInteraction) {
-            return new InteractionBuilder(commandType);
-        }
-
-        throw new Error()
+interface InteractionOptions {
+    type: 'reply' | 'send';
 }
 
-// supposed to be a class? idk;
+export class Builder {
+    // Default Properties of a Builder;
+    interaction: Interaction | Message;
+    mention: boolean;
+    idle: boolean;
+    time: number;
+    // FIXME: Correctly type this later on....Maybe
+    filter: Function;
+    interactionOptions: any;
+    content?: string | MessageCreateOptions;
+    maxInteractions?: number;
 
-// Taking a break, having a brain aneurysm. will figure out what to do soon.
+    constructor(interaction: Interaction | Message) {
+        this.interaction = interaction;
+        this.mention = true;
+        this.idle = false;
+        this.filter = (collectorInteraction: Interaction) =>
+            collectorInteraction.user.id === interaction.user.id;
+        this.time = 15 * 1000; // 15 seconds default;
+    }
+
+    // TODO: Add old methods; new one for consistency;
+    setMention(allowMention: boolean = true): this {
+        this.mention = allowMention;
+        return this;
+    }
+
+    setIdle(allowIdling: boolean = true): this {
+        this.idle = allowIdling;
+        return this;
+    }
+
+    setCustomFilter(customFilter: Function): this {
+        this.filter = customFilter;
+        return this;
+    }
+
+    setTime(time: number): this {
+        this.time = time;
+        return this;
+    }
+
+    setContent(messageContent: string | MessageCreateOptions): this {
+        this.content = messageContent;
+        return this;
+    }
+
+    setMaxInteractions(maxInteractions: number): this {
+        this.maxInteractions = maxInteractions;
+        return this;
+    }
+
+    setInteractionOptions(options: InteractionOptions): this {
+        this.interactionOptions = options;
+        return this;
+    }
+}

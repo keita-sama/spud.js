@@ -1,4 +1,4 @@
-import { Builder, getCorrectBuilder } from "./Builder";
+import { Builder } from "./Builder";
 import {
     Message,
     ButtonStyle, // TODO: USE THIS [x]
@@ -53,10 +53,9 @@ Could be a link to a shop, a button that opens up yet another menu. Possibilitie
 are endless!
 */
 
-export class PaginationBuilder<T extends Message | Interaction> {
+export class PaginationBuilder extends Builder {
     pages: Page[];
     buttons: object; // FIXME: fix the type;
-    builder: MessageBuilder | InteractionBuilder;
 
     // TODO: Fully remove this later, keeping it incase i drop the Page stuff
     // linkedComponents?: (ButtonBuilder | SelectMenuType)[];
@@ -70,10 +69,9 @@ export class PaginationBuilder<T extends Message | Interaction> {
     //customComponents?: (ButtonBuilder | SelectMenuType)[];
     customComponentHandler?: Function;
 
-    constructor(commandType: T) {
-        this.builder = getCorrectBuilder(commandType)
-        Object.assign(this, this.builder);
-
+    constructor(interaction: Interaction | Message) {
+        super(interaction)
+        this.interaction = interaction;
         this.pages = [];
 
         // TODO: add the buttons [x]
