@@ -1,13 +1,14 @@
 import {
+    BaseInteraction,
     Message,
     type Interaction,
-    type MessageCreateOptions
+    type MessageCreateOptions,
 } from "discord.js";
 
-import  { SpudJSError } from './Errors/SpudJSError';
+import { SpudJSError } from "./Errors/SpudJSError";
 
 interface InteractionOptions {
-    type: 'reply' | 'send';
+    type: "reply" | "send";
 }
 
 export class Builder {
@@ -26,8 +27,16 @@ export class Builder {
         this.interaction = interaction;
         this.mention = true;
         this.idle = false;
+
+        // Default to Interaction, change to message if detected.
         this.filter = (collectorInteraction: Interaction) =>
-            collectorInteraction.user.id === interaction.user.id;
+            collectorInteraction.user.id === (this.interaction as Interaction).user.id;
+
+        if (this.interaction instanceof Message) {
+            this.filter = (collectorInteraction: Interaction) =>
+                collectorInteraction.user.id === (this.interaction as Message).author.id;
+        }
+
         this.time = 15 * 1000; // 15 seconds default;
     }
 

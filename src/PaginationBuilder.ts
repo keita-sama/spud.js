@@ -8,8 +8,6 @@ import {
     type SelectMenuType,
     ActionRowBuilder
 } from "discord.js";
-import type { MessageBuilder } from "./MessageBuilder";
-import type { InteractionBuilder } from "./InteractionBuilder";
 
 interface Page {
     embed: EmbedBuilder;
