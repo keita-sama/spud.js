@@ -11,14 +11,15 @@ interface InteractionOptions {
     type: "reply" | "send";
 }
 
+type FilterFunction<F> = (args?: F) => boolean
+
 export class Builder {
     // Default Properties of a Builder;
     interaction: Interaction | Message;
     mention: boolean;
     idle: boolean;
     time: number;
-    // FIXME: Correctly type this later on....Maybe
-    filter: Function;
+    filter: FilterFunction<any>;
     interactionOptions: any;
     content?: string | MessageCreateOptions;
     maxInteractions?: number;
@@ -51,7 +52,7 @@ export class Builder {
         return this;
     }
 
-    setCustomFilter(customFilter: Function): this {
+    setCustomFilter(customFilter: FilterFunction<any>): this {
         this.filter = customFilter;
         return this;
     }
