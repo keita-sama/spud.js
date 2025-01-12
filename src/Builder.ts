@@ -11,7 +11,7 @@ interface InteractionOptions {
     type: "reply" | "send";
 }
 
-type FilterFunction<F> = (args?: F) => boolean
+type FilterFunction<F> = (...args: F[]) => boolean
 
 export class Builder {
     // Default Properties of a Builder;
