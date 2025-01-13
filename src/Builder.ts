@@ -1,8 +1,10 @@
 import {
-    BaseInteraction,
-    Message,
     type Interaction,
     type MessageCreateOptions,
+    Message,
+    ChatInputCommandInteraction,
+    ButtonInteraction,
+    BaseInteraction,
 } from "discord.js";
 
 import { SpudJSError } from "./Errors/SpudJSError";
@@ -11,11 +13,13 @@ interface InteractionOptions {
     type: "reply" | "send";
 }
 
+type ReplyableInteraction = ChatInputCommandInteraction | ButtonInteraction;
+
 type FilterFunction<F> = (...args: F[]) => boolean
 
 export class Builder {
     // Default Properties of a Builder;
-    interaction: Interaction | Message;
+    interaction: ReplyableInteraction | Message;
     mention: boolean;
     idle: boolean;
     time: number;
@@ -24,14 +28,14 @@ export class Builder {
     content?: string | MessageCreateOptions;
     maxInteractions?: number;
 
-    constructor(interaction: Interaction | Message) {
+    constructor(interaction: ReplyableInteraction | Message) {
         this.interaction = interaction;
         this.mention = true;
         this.idle = false;
 
         // Default to Interaction, change to message if detected.
         this.filter = (collectorInteraction: Interaction) =>
-            collectorInteraction.user.id === (this.interaction as Interaction).user.id;
+            collectorInteraction.user.id === (this.interaction as ReplyableInteraction).user.id;
 
         if (this.interaction instanceof Message) {
             this.filter = (collectorInteraction: Interaction) =>
@@ -75,5 +79,14 @@ export class Builder {
     setInteractionOptions(options: InteractionOptions): this {
         this.interactionOptions = options;
         return this;
+    }
+
+    // Type Guards (because fuck ts)
+    isMessage(): boolean {
+        return (this.interaction instanceof Message)
+    }
+
+    isInteraction(): boolean {
+        return (this.interaction instanceof BaseInteraction)
     }
 }
