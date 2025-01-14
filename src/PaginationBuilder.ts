@@ -1,25 +1,28 @@
 import { Builder } from "./Builder";
 import {
+    type Interaction,
+    type MessageReplyOptions,
     Message,
     ButtonStyle, // TODO: USE THIS [x]
-    type Interaction,
     EmbedBuilder,
     ButtonBuilder,
-    type SelectMenuType,
     ActionRowBuilder,
-    ChannelType,
     ChatInputCommandInteraction,
     ButtonInteraction,
-    BaseInteraction
+    StringSelectMenuBuilder,
+    RoleSelectMenuBuilder,
 } from "discord.js";
-import { SpudJSError } from "./Errors/SpudJSError";
+import { SpudJSError } from "./errors/SpudJSError";
+
+// TODO: UHH, do types go in separate files?
+type ReplyableInteraction = ChatInputCommandInteraction | ButtonInteraction;
+type AcceptedSelectBuilders = StringSelectMenuBuilder | RoleSelectMenuBuilder;
+type ButtonNames = "previous" | "next" | "last" | "first" | "trash";
 
 interface Page {
     embed: EmbedBuilder;
-    components?: ActionRowBuilder;
+    components?: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder>;
 }
-
-type ButtonNames = "previous" | "next" | "last" | "first" | "trash";
 
 const buttons = {
     trash: new ButtonBuilder().setCustomId("trash").setEmoji("🗑").setStyle(ButtonStyle.Danger),
@@ -39,12 +42,9 @@ Could be a link to a shop, a button that opens up yet another menu. Possibilitie
 are endless!
 */
 
-// TODO: UHH, do types go in separate files?
-type ReplyableInteraction = ChatInputCommandInteraction | ButtonInteraction;
-
 export class PaginationBuilder extends Builder {
     pages: Page[];
-    buttons: Record<string, ButtonBuilder>; // FIXME: fix the type;
+    buttons: Record<string, ButtonBuilder>;
 
     // TODO: Fully remove this later, keeping it incase i drop the Page stuff
     // linkedComponents?: (ButtonBuilder | SelectMenuType)[];
@@ -55,7 +55,7 @@ export class PaginationBuilder extends Builder {
     fastSkip: boolean;
 
     // TODO: Add functionality to this. They use separate logic and work on their own row
-    customComponents?: (ButtonBuilder | SelectMenuType)[];
+    // customComponents?: (ButtonBuilder | SelectMenuType)[];
     customComponentHandler?: Function;
 
     constructor(interaction: ReplyableInteraction | Message) {
@@ -93,28 +93,34 @@ export class PaginationBuilder extends Builder {
         return this;
     }
 
-    setCustomComponentHandler(handler: (i: Interaction, ...args: any[]) => unknown): this {
+    setCustomComponentHandler(handler: (i: Interaction, ...args: any[]) => any): this {
         this.customComponentHandler = handler;
         return this;
     }
 
     async send(): Promise<void> {
         const { filter, maxInteractions: max, time } = this;
-        const navigation: ActionRowBuilder[] = [];
+        const navigation: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder>[] = [];
 
         const paginationComponentsRow: ActionRowBuilder<ButtonBuilder> = new ActionRowBuilder();
-        const customComponents = this.getPageComponents();
+        const customComponents: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder> | undefined = this.getPageComponents();
 
         paginationComponentsRow.setComponents(this.createPaginationComponents());
 
-        let initialMessage;
+        navigation.push(...[paginationComponentsRow, customComponents].filter((x) => x !== undefined));
 
+        // FIXME: Type this properly.
+        const messagePayload: MessageReplyOptions = {};
+
+        // Construction of payload
+    
+        
+        messagePayload.embeds = [this.getPageEmbed()];
+        messagePayload.components = navigation;
+
+        let initialMessage;
         if (this.isMessage()) {
-            initialMessage = await (this.interaction as Message).reply({
-                //content: this.content,
-                embeds: [this.getPageEmbed()],
-                components: [paginationComponentsRow, customComponents],
-            });
+            initialMessage = await (this.interaction as Message).reply(messagePayload);
         } else if (this.isInteraction()) {
             initialMessage = await (this.interaction as ReplyableInteraction).reply({ content: "sex" });
         } else throw new SpudJSError("Something fucking happened.");
@@ -133,7 +139,7 @@ export class PaginationBuilder extends Builder {
     getPageEmbed(): EmbedBuilder {
         return this.getPage().embed;
     }
-    getPageComponents(): ActionRowBuilder | undefined {
+    getPageComponents(): ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder> | undefined {
         return this.getPage().components;
     }
     setPage(page: number): Page {

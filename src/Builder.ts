@@ -1,21 +1,14 @@
-import {
-    type Interaction,
-    type MessageCreateOptions,
-    Message,
-    ChatInputCommandInteraction,
-    ButtonInteraction,
-    BaseInteraction,
-} from "discord.js";
+import { type Interaction, type MessageCreateOptions, Message, ChatInputCommandInteraction, ButtonInteraction, BaseInteraction } from "discord.js";
 
-import { SpudJSError } from "./Errors/SpudJSError";
+import { SpudJSError } from "./errors/SpudJSError";
 
 interface InteractionOptions {
     type: "reply" | "send";
 }
 
 type ReplyableInteraction = ChatInputCommandInteraction | ButtonInteraction;
-
-type FilterFunction<F> = (...args: F[]) => boolean
+type SafeMessageOptions = Omit<MessageCreateOptions, 'embeds' | 'components'>
+type FilterFunction<F> = (...args: F[]) => boolean;
 
 export class Builder {
     // Default Properties of a Builder;
@@ -24,8 +17,8 @@ export class Builder {
     idle: boolean;
     time: number;
     filter: FilterFunction<any>;
-    interactionOptions: any;
-    content?: string | MessageCreateOptions;
+    interactionOptions: any; // FIXME
+    messageOptions?: SafeMessageOptions;
     maxInteractions?: number;
 
     constructor(interaction: ReplyableInteraction | Message) {
@@ -34,12 +27,10 @@ export class Builder {
         this.idle = false;
 
         // Default to Interaction, change to message if detected.
-        this.filter = (collectorInteraction: Interaction) =>
-            collectorInteraction.user.id === (this.interaction as ReplyableInteraction).user.id;
+        this.filter = (collectorInteraction: Interaction) => collectorInteraction.user.id === (this.interaction as ReplyableInteraction).user.id;
 
         if (this.interaction instanceof Message) {
-            this.filter = (collectorInteraction: Interaction) =>
-                collectorInteraction.user.id === (this.interaction as Message).author.id;
+            this.filter = (collectorInteraction: Interaction) => collectorInteraction.user.id === (this.interaction as Message).author.id;
         }
 
         this.time = 15 * 1000; // 15 seconds default;
@@ -66,8 +57,8 @@ export class Builder {
         return this;
     }
 
-    setContent(messageContent: string | MessageCreateOptions): this {
-        this.content = messageContent;
+    setMesage(messageOptions: SafeMessageOptions): this {
+        this.messageOptions = messageOptions;
         return this;
     }
 
@@ -83,10 +74,10 @@ export class Builder {
 
     // Type Guards (because fuck ts)
     isMessage(): boolean {
-        return (this.interaction instanceof Message)
+        return this.interaction instanceof Message;
     }
 
     isInteraction(): boolean {
-        return (this.interaction instanceof BaseInteraction)
+        return this.interaction instanceof BaseInteraction;
     }
 }
