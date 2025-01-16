@@ -3,7 +3,7 @@ import {
     type Interaction,
     type MessageReplyOptions,
     Message,
-    ButtonStyle, // TODO: USE THIS [x]
+    ButtonStyle,
     EmbedBuilder,
     ButtonBuilder,
     ActionRowBuilder,
@@ -11,6 +11,7 @@ import {
     ButtonInteraction,
     StringSelectMenuBuilder,
     RoleSelectMenuBuilder,
+    type InteractionReplyOptions
 } from "discord.js";
 import { SpudJSError } from "./errors/SpudJSError";
 
@@ -113,8 +114,10 @@ export class PaginationBuilder extends Builder {
         const messagePayload: MessageReplyOptions = {};
 
         // Construction of payload
-    
-        
+
+        // if (this.messageOptions?.files) messagePayload.files = this.messageOptions.content;
+        if (this.messageOptions?.content) messagePayload.content = this.messageOptions.content;
+        messagePayload.allowedMentions = { repliedUser: this.mention }
         messagePayload.embeds = [this.getPageEmbed()];
         messagePayload.components = navigation;
 
@@ -122,7 +125,7 @@ export class PaginationBuilder extends Builder {
         if (this.isMessage()) {
             initialMessage = await (this.interaction as Message).reply(messagePayload);
         } else if (this.isInteraction()) {
-            initialMessage = await (this.interaction as ReplyableInteraction).reply({ content: "sex" });
+            initialMessage = await (this.interaction as ReplyableInteraction).reply(messagePayload as InteractionReplyOptions);
         } else throw new SpudJSError("Something fucking happened.");
 
         const collector = initialMessage.createMessageComponentCollector({

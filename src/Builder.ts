@@ -1,4 +1,11 @@
-import { type Interaction, type MessageCreateOptions, Message, ChatInputCommandInteraction, ButtonInteraction, BaseInteraction } from "discord.js";
+import { 
+    type Interaction,
+    type MessageReplyOptions,
+    Message,
+    ChatInputCommandInteraction,
+    ButtonInteraction,
+    BaseInteraction,
+} from "discord.js";
 
 import { SpudJSError } from "./errors/SpudJSError";
 
@@ -7,7 +14,7 @@ interface InteractionOptions {
 }
 
 type ReplyableInteraction = ChatInputCommandInteraction | ButtonInteraction;
-type SafeMessageOptions = Omit<MessageCreateOptions, 'embeds' | 'components'>
+type SafeMessageOptions = Omit<MessageReplyOptions, "embeds" | "components">;
 type FilterFunction<F> = (...args: F[]) => boolean;
 
 export class Builder {
