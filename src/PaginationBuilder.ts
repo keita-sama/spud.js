@@ -3,6 +3,7 @@ import {
     type Interaction,
     type MessageReplyOptions,
     type InteractionReplyOptions,
+    type RepliableInteraction,
     Message,
     ButtonStyle,
     EmbedBuilder,
@@ -16,7 +17,7 @@ import {
 import { SpudJSError } from "./errors/SpudJSError";
 
 // TODO: UHH, do types go in separate files?
-type ReplyableInteraction = ChatInputCommandInteraction | ButtonInteraction;
+//type ReplyableInteraction = ChatInputCommandInteraction | ButtonInteraction;
 type AcceptedSelectBuilders = StringSelectMenuBuilder | RoleSelectMenuBuilder;
 type ButtonNames = "previous" | "next" | "last" | "first" | "trash";
 
@@ -47,7 +48,7 @@ export class PaginationBuilder extends Builder {
     // customComponents?: (ButtonBuilder | SelectMenuType)[];
     customComponentHandler?: Function;
 
-    constructor(interaction: ReplyableInteraction | Message) {
+    constructor(interaction: RepliableInteraction | Message) {
         super(interaction);
         this.interaction = interaction;
         this.pages = [];
@@ -106,7 +107,7 @@ export class PaginationBuilder extends Builder {
         if (this.isMessage()) {
             initialMessage = await (this.interaction as Message).reply(messagePayload);
         } else if (this.isInteraction()) {
-            initialMessage = await (this.interaction as ReplyableInteraction).reply(messagePayload as InteractionReplyOptions);
+            initialMessage = await (this.interaction as RepliableInteraction).reply(messagePayload as InteractionReplyOptions);
         } else throw new SpudJSError("Something fucking happened.");
 
         const collector = initialMessage.createMessageComponentCollector({

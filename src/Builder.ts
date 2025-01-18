@@ -1,10 +1,12 @@
 import { 
     type Interaction,
     type MessageReplyOptions,
+    type RepliableInteraction,
     Message,
     ChatInputCommandInteraction,
     ButtonInteraction,
     BaseInteraction,
+    MessageContextMenuCommandInteraction,
 } from "discord.js";
 
 import { SpudJSError } from "./errors/SpudJSError";
@@ -13,13 +15,13 @@ interface InteractionOptions {
     type: "reply" | "send";
 }
 
-type ReplyableInteraction = ChatInputCommandInteraction | ButtonInteraction;
+//type ReplyableInteraction = ChatInputCommandInteraction | ButtonInteraction | MessageContextMenuCommandInteraction;
 type SafeMessageOptions = Omit<MessageReplyOptions, "embeds" | "components">;
 type FilterFunction<F> = (...args: F[]) => boolean;
 
 export class Builder {
     // Default Properties of a Builder;
-    interaction: ReplyableInteraction | Message;
+    interaction: RepliableInteraction | Message;
     mention: boolean;
     idle: boolean;
     time: number;
@@ -28,13 +30,13 @@ export class Builder {
     messageOptions?: SafeMessageOptions;
     maxInteractions?: number;
 
-    constructor(interaction: ReplyableInteraction | Message) {
+    constructor(interaction: RepliableInteraction | Message) {
         this.interaction = interaction;
         this.mention = true;
         this.idle = false;
 
         // Default to Interaction, change to message if detected.
-        this.filter = (collectorInteraction: Interaction) => collectorInteraction.user.id === (this.interaction as ReplyableInteraction).user.id;
+        this.filter = (collectorInteraction: Interaction) => collectorInteraction.user.id === (this.interaction as RepliableInteraction).user.id;
 
         if (this.interaction instanceof Message) {
             this.filter = (collectorInteraction: Interaction) => collectorInteraction.user.id === (this.interaction as Message).author.id;
