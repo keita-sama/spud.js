@@ -2,6 +2,7 @@ import { Builder } from "./Builder";
 import {
     type Interaction,
     type MessageReplyOptions,
+    type InteractionReplyOptions,
     Message,
     ButtonStyle,
     EmbedBuilder,
@@ -10,8 +11,7 @@ import {
     ChatInputCommandInteraction,
     ButtonInteraction,
     StringSelectMenuBuilder,
-    RoleSelectMenuBuilder,
-    type InteractionReplyOptions
+    RoleSelectMenuBuilder
 } from "discord.js";
 import { SpudJSError } from "./errors/SpudJSError";
 
