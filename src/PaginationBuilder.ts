@@ -1,6 +1,6 @@
 import { Builder } from "./Builder";
 import {
-    type Interaction,
+    type ButtonInteraction,
     type MessageReplyOptions,
     type InteractionReplyOptions,
     type RepliableInteraction,
@@ -9,15 +9,12 @@ import {
     EmbedBuilder,
     ButtonBuilder,
     ActionRowBuilder,
-    ChatInputCommandInteraction,
-    ButtonInteraction,
     StringSelectMenuBuilder,
     RoleSelectMenuBuilder
 } from "discord.js";
 import { SpudJSError } from "./errors/SpudJSError";
 
 // TODO: UHH, do types go in separate files?
-//type ReplyableInteraction = ChatInputCommandInteraction | ButtonInteraction;
 type AcceptedSelectBuilders = StringSelectMenuBuilder | RoleSelectMenuBuilder;
 type ButtonNames = "previous" | "next" | "last" | "first" | "trash";
 
@@ -26,7 +23,6 @@ interface Page {
     components?: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder>;
 }
 
-// TODO: Finish this class - it should represet a page
 /* 
 What is a page?
 
@@ -36,6 +32,10 @@ Could be a link to a shop, a button that opens up yet another menu. Possibilitie
 are endless!
 */
 
+/**
+ * Represents a Pagination Instance
+ * @class
+ */
 export class PaginationBuilder extends Builder {
     pages: Page[];
     buttons: Record<string, ButtonBuilder> | undefined;
@@ -43,9 +43,7 @@ export class PaginationBuilder extends Builder {
     editableButtons: ButtonNames[];
     trashBin: boolean;
     fastSkip: boolean;
-
-    // TODO: Add functionality to this. They use separate logic and work on their own row
-    // customComponents?: (ButtonBuilder | SelectMenuType)[];
+    customComponents?: ActionRowBuilder<ButtonBuilder | AcceptedSelectBuilders>;
     customComponentHandler?: Function;
 
     constructor(interaction: RepliableInteraction | Message) {
@@ -56,11 +54,13 @@ export class PaginationBuilder extends Builder {
         this.editableButtons = ["previous", "next"];
         this.trashBin = false;
         this.fastSkip = false;
-
     }
 
     setPages(pages: Page[]): this {
         this.pages = pages;
+        if (this.currentPage === 0) {
+            this.setPage(0);
+        }
         return this;
     }
 
@@ -82,7 +82,12 @@ export class PaginationBuilder extends Builder {
         return this;
     }
 
-    setCustomComponentHandler(handler: (i: Interaction, ...args: any[]) => any): this {
+    setCustomComponets(customComponents: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder>): this {
+        this.customComponents = customComponents;
+        return this;
+    }
+
+    setCustomComponentHandler(handler: (i: ButtonInteraction) => any): this {
         this.customComponentHandler = handler;
         return this;
     }
@@ -92,8 +97,7 @@ export class PaginationBuilder extends Builder {
 
         let navigation = this.createNavigation();
         let totalPages = this.getPageCount();
-        // FIXME: Type this properly.
-        // Construction of payload
+
         const messagePayload: MessageReplyOptions = {
             embeds: [this.getPageEmbed()],
             components: navigation,
@@ -126,6 +130,8 @@ export class PaginationBuilder extends Builder {
                 this.currentPage--;
             } else if (i.customId === "left-fast") {
                 this.currentPage = 0;
+            } else if (i.customId) {
+                if (this.customComponentHandler) await this.customComponentHandler(i);
             }
 
             navigation = this.createNavigation();
@@ -150,13 +156,14 @@ export class PaginationBuilder extends Builder {
     getPageComponents(): ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder> | undefined {
         return this.getPageData().components;
     }
+
     setPage(page: number): Page {
         this.currentPage = page;
         return this.getPageData();
     }
 
     createPaginationComponents(): ButtonBuilder[] {
-        const buttons = this.getPaginationButtons()
+        const buttons = this.getPaginationButtons();
         const paginationComponents: ButtonBuilder[] = [];
 
         paginationComponents.push(buttons.previous);
@@ -179,7 +186,8 @@ export class PaginationBuilder extends Builder {
             trash: new ButtonBuilder()
                 .setCustomId("trash")
                 .setEmoji("🗑")
-                .setStyle(ButtonStyle.Danger),
+                .setStyle(ButtonStyle.Danger)
+                .setDisabled(false),
             next: new ButtonBuilder()
                 .setCustomId("right")
                 .setEmoji("▶")
@@ -207,11 +215,12 @@ export class PaginationBuilder extends Builder {
         const navigation: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder>[] = [];
 
         const paginationComponentsRow: ActionRowBuilder<ButtonBuilder> = new ActionRowBuilder();
-        const customComponents: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder> | undefined = this.getPageComponents();
+        const pageComponents: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder> | undefined = this.getPageComponents();
+        const customComponents: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder> | undefined = this?.customComponents;
 
         paginationComponentsRow.setComponents(this.createPaginationComponents());
 
-        navigation.push(...[paginationComponentsRow, customComponents].filter((x) => x !== undefined));
+        navigation.push(...[paginationComponentsRow, pageComponents, customComponents].filter((x) => x !== undefined));
 
         return navigation;
     }
