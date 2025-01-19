@@ -111,7 +111,9 @@ export class PaginationBuilder extends Builder {
         if (this.isMessage()) {
             initialMessage = await (this.interaction as Message).reply(messagePayload);
         } else if (this.isInteraction()) {
-            initialMessage = await (this.interaction as RepliableInteraction).reply(messagePayload as InteractionReplyOptions);
+            initialMessage = await (this.interaction as RepliableInteraction).reply(
+                messagePayload as InteractionReplyOptions
+            );
         } else throw new SpudJSError("Something fucking happened.");
 
         const collector = initialMessage.createMessageComponentCollector({
@@ -215,8 +217,10 @@ export class PaginationBuilder extends Builder {
         const navigation: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder>[] = [];
 
         const paginationComponentsRow: ActionRowBuilder<ButtonBuilder> = new ActionRowBuilder();
-        const pageComponents: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder> | undefined = this.getPageComponents();
-        const customComponents: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder> | undefined = this?.customComponents;
+        const pageComponents: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder> | undefined =
+            this.getPageComponents();
+        const customComponents: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder> | undefined =
+            this?.customComponents;
 
         paginationComponentsRow.setComponents(this.createPaginationComponents());
 
