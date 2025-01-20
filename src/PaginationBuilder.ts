@@ -63,7 +63,6 @@ export class PaginationBuilder extends Builder {
     /**
      * Sets the pages that will be used when paging.
      * @param pages
-     * @returns 
      */
     setPages(pages: Page[]): this {
         this.pages = pages;
@@ -76,7 +75,6 @@ export class PaginationBuilder extends Builder {
     /**
      * Appends a new page. Useful when you have dynamic data.
      * @param page
-     * @returns 
      */
     addPage(page: Page): this {
         this.pages.push(page);
@@ -85,7 +83,6 @@ export class PaginationBuilder extends Builder {
 
     /**
      * Adds two extra buttons that skips to the beginning and end of your pages.
-     * @returns 
      */
     addFastSkip(): this {
         this.fastSkip = true;
@@ -96,7 +93,6 @@ export class PaginationBuilder extends Builder {
 
     /**
      * Adds an extra button that forcibly stops the collector.
-     * @returns 
      */
     addTrashBin(): this {
         this.trashBin = true;
@@ -106,8 +102,7 @@ export class PaginationBuilder extends Builder {
 
     /**
      * Sets custom components that will be available regardless of page.
-     * @param customComponents 
-     * @returns 
+     * @param customComponents
      */
     setCustomComponets(customComponents: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder>): this {
         this.customComponents = customComponents;
@@ -116,8 +111,7 @@ export class PaginationBuilder extends Builder {
 
     /**
      * Sets the function used to handling custom components.
-     * @param handler 
-     * @returns 
+     * @param handler
      */
     setCustomComponentHandler(handler: (i: ButtonInteraction) => any): this {
         this.customComponentHandler = handler;

@@ -3,7 +3,7 @@ import {
     type MessageReplyOptions,
     type RepliableInteraction,
     Message,
-    BaseInteraction,
+    BaseInteraction
 } from "discord.js";
 
 interface InteractionOptions {
@@ -50,7 +50,7 @@ export class Builder {
     /**
      * Allows the response to mention the user
      * @param allowMention
-     * @returns
+
      */
     setMention(allowMention: boolean = true): this {
         this.mention = allowMention;
@@ -59,7 +59,7 @@ export class Builder {
     /**
      * Determines whether this pagination instance can idle.
      * @param allowIdling
-     * @returns
+
      */
     setIdle(allowIdling: boolean = true): this {
         this.idle = allowIdling;
@@ -68,7 +68,7 @@ export class Builder {
     /**
      * A validation function that runs everytime a buttons is clicked. Defaults to Author Filtering.
      * @param customFilter
-     * @returns
+
      */
     setCustomFilter(customFilter: FilterFunction<any>): this {
         this.filter = customFilter;
@@ -77,7 +77,7 @@ export class Builder {
     /**
      * Sets the amount of time the collector can last. If idle is set, this will be passed as idle time instead.
      * @param time 
-     * @returns 
+ 
      */
     setTime(time: number): this {
         this.time = time;
@@ -87,7 +87,7 @@ export class Builder {
     /**
      * Options for extra content to send in the accompanying message.
      * @param messageOptions - 
-     * @returns 
+ 
      */
     setMesage(messageOptions: SafeMessageOptions): this {
         this.messageOptions = messageOptions;
@@ -97,7 +97,7 @@ export class Builder {
     /**
      * Determines the amount of times this collector can be used.
      * @param maxInteractions
-     * @returns 
+ 
      */
     setMaxInteractions(maxInteractions: number): this {
         this.maxInteractions = maxInteractions;
@@ -107,7 +107,7 @@ export class Builder {
     /**
      * Options used to configure how the pagination will be handled if you are using slash command interactions.
      * @param interactionOptions
-     * @returns 
+ 
      */
     setInteractionOptions(interactionOptions: InteractionOptions): this {
         this.interactionOptions = interactionOptions;
