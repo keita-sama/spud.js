@@ -46,6 +46,10 @@ export class PaginationBuilder extends Builder {
     customComponents?: ActionRowBuilder<ButtonBuilder | AcceptedSelectBuilders>;
     customComponentHandler?: Function;
 
+    /**
+     * Sets the interaction used to collect inputs.
+     * @param interaction
+     */
     constructor(interaction: RepliableInteraction | Message) {
         super(interaction);
         this.interaction = interaction;
@@ -56,6 +60,11 @@ export class PaginationBuilder extends Builder {
         this.fastSkip = false;
     }
 
+    /**
+     * Sets the pages that will be used when paging.
+     * @param pages
+     * @returns 
+     */
     setPages(pages: Page[]): this {
         this.pages = pages;
         if (this.currentPage === 0) {
@@ -64,11 +73,20 @@ export class PaginationBuilder extends Builder {
         return this;
     }
 
+    /**
+     * Appends a new page. Useful when you have dynamic data.
+     * @param page
+     * @returns 
+     */
     addPage(page: Page): this {
         this.pages.push(page);
         return this;
     }
 
+    /**
+     * Adds two extra buttons that skips to the beginning and end of your pages.
+     * @returns 
+     */
     addFastSkip(): this {
         this.fastSkip = true;
         this.editableButtons.push("last");
@@ -76,22 +94,40 @@ export class PaginationBuilder extends Builder {
         return this;
     }
 
+    /**
+     * Adds an extra button that forcibly stops the collector.
+     * @returns 
+     */
     addTrashBin(): this {
         this.trashBin = true;
         this.editableButtons.push("trash");
         return this;
     }
 
+    /**
+     * Sets custom components that will be available regardless of page.
+     * @param customComponents 
+     * @returns 
+     */
     setCustomComponets(customComponents: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder>): this {
         this.customComponents = customComponents;
         return this;
     }
 
+    /**
+     * Sets the function used to handling custom components.
+     * @param handler 
+     * @returns 
+     */
     setCustomComponentHandler(handler: (i: ButtonInteraction) => any): this {
         this.customComponentHandler = handler;
         return this;
     }
 
+    /**
+     * Handles the interaction.
+     * @async
+     */
     async send(): Promise<void> {
         const { filter, maxInteractions: max, time } = this;
 
