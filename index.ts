@@ -1,6 +1,1 @@
-import { PaginationBuilder } from "./src/PaginationBuilder";
-
-
-export default {
-    PaginationBuilder
-}
+export { PaginationBuilder } from './src/PaginationBuilder'

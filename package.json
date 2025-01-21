@@ -1,7 +1,15 @@
 {
   "name": "spud.js",
   "module": "index.ts",
+  "version": "4.0.0-dev2",
   "type": "module",
+  "main": "dist/index.js",
+  "types": "types/index.d.ts",
+  "files": [
+    "build",
+    "README.md",
+    "types"
+  ],
   "repository": {
     "url": "https://github.com/keita-sama/spud.js"
   },
