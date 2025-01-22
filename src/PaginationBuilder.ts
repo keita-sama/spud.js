@@ -38,7 +38,6 @@ are endless!
  */
 export class PaginationBuilder extends Builder {
     pages: Page[];
-    buttons: Record<string, ButtonBuilder> | undefined;
     currentPage: number;
     editableButtons: ButtonNames[];
     trashBin: boolean;
@@ -176,25 +175,7 @@ export class PaginationBuilder extends Builder {
         });
     }
 
-    getPageData(): Page {
-        return this.pages[this.currentPage];
-    }
-    getPageCount(): number {
-        return this.pages.length - 1;
-    }
-    getPageEmbed(): EmbedBuilder {
-        return this.getPageData().embed;
-    }
-    getPageComponents(): ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder> | undefined {
-        return this.getPageData().components;
-    }
-
-    setPage(page: number): Page {
-        this.currentPage = page;
-        return this.getPageData();
-    }
-
-    createPaginationComponents(): ButtonBuilder[] {
+    private createPaginationComponents(): ButtonBuilder[] {
         const buttons = this.getPaginationButtons();
         const paginationComponents: ButtonBuilder[] = [];
 
@@ -257,5 +238,43 @@ export class PaginationBuilder extends Builder {
         navigation.push(...[paginationComponentsRow, pageComponents, customComponents].filter((x) => x !== undefined));
 
         return navigation;
+    }
+
+    /**
+     * @returns The current page's embed and components if it has any.
+     */
+    getPageData(): Page {
+        return this.pages[this.currentPage];
+    }
+
+    /**
+     * @returns The amount of pages present in this instance.
+     */
+    getPageCount(): number {
+        return this.pages.length - 1;
+    }
+
+    /**
+     * @returns This page's embed 
+     */
+    getPageEmbed(): EmbedBuilder {
+        return this.getPageData().embed;
+    }
+
+    /**
+     * @returns This page's components if it has any.
+     */
+
+    getPageComponents(): ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder> | undefined {
+        return this.getPageData()?.components;
+    }
+
+    /**
+     * @param page - The index of the page you would like to navigate to.
+     * @returns The current Page's embed and components if it has any. 
+     */
+    setPage(page: number): Page {
+        this.currentPage = page;
+        return this.getPageData();
     }
 }
