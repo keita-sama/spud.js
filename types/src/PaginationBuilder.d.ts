@@ -1,7 +1,7 @@
-import { Builder } from "./Builder";
-import { type ButtonInteraction, type RepliableInteraction, Message, EmbedBuilder, ButtonBuilder, ActionRowBuilder, StringSelectMenuBuilder, RoleSelectMenuBuilder } from "discord.js";
+import { Builder } from './Builder';
+import { type ButtonInteraction, type RepliableInteraction, Message, EmbedBuilder, ButtonBuilder, ActionRowBuilder, StringSelectMenuBuilder, RoleSelectMenuBuilder } from 'discord.js';
 type AcceptedSelectBuilders = StringSelectMenuBuilder | RoleSelectMenuBuilder;
-type ButtonNames = "previous" | "next" | "last" | "first" | "trash";
+type ButtonNames = 'previous' | 'next' | 'last' | 'first' | 'trash';
 interface Page {
     embed: EmbedBuilder;
     components?: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder>;
@@ -12,13 +12,13 @@ interface Page {
  */
 export declare class PaginationBuilder extends Builder {
     pages: Page[];
-    buttons: Record<string, ButtonBuilder> | undefined;
     currentPage: number;
     editableButtons: ButtonNames[];
     trashBin: boolean;
     fastSkip: boolean;
     customComponents?: ActionRowBuilder<ButtonBuilder | AcceptedSelectBuilders>;
     customComponentHandler?: Function;
+    deleteMessage: boolean;
     /**
      * Sets the interaction used to collect inputs.
      * @param interaction
@@ -40,8 +40,9 @@ export declare class PaginationBuilder extends Builder {
     addFastSkip(): this;
     /**
      * Adds an extra button that forcibly stops the collector.
+     * @param deleteMessage - Determines whether the message will get deleted if this instance is trashed.
      */
-    addTrashBin(): this;
+    addTrashBin(deleteMessage: boolean): this;
     /**
      * Sets custom components that will be available regardless of page.
      * @param customComponents
@@ -57,13 +58,29 @@ export declare class PaginationBuilder extends Builder {
      * @async
      */
     send(): Promise<void>;
-    getPageData(): Page;
-    getPageCount(): number;
-    getPageEmbed(): EmbedBuilder;
-    getPageComponents(): ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder> | undefined;
-    setPage(page: number): Page;
-    createPaginationComponents(): ButtonBuilder[];
+    private createPaginationComponents;
     getPaginationButtons(): Record<ButtonNames, ButtonBuilder>;
     createNavigation(): ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder>[];
+    /**
+     * @returns The current page's embed and components if it has any.
+     */
+    getPageData(): Page;
+    /**
+     * @returns The amount of pages present in this instance.
+     */
+    getPageCount(): number;
+    /**
+     * @returns This page's embed
+     */
+    getPageEmbed(): EmbedBuilder;
+    /**
+     * @returns This page's components if it has any.
+     */
+    getPageComponents(): ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder> | undefined;
+    /**
+     * @param page - The index of the page you would like to navigate to.
+     * @returns The current Page's embed and components if it has any.
+     */
+    setPage(page: number): Page;
 }
 export {};

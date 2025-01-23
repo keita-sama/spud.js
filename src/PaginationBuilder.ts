@@ -1,4 +1,4 @@
-import { Builder } from "./Builder";
+import { Builder } from './Builder';
 import {
     type ButtonInteraction,
     type MessageReplyOptions,
@@ -11,12 +11,12 @@ import {
     ActionRowBuilder,
     StringSelectMenuBuilder,
     RoleSelectMenuBuilder
-} from "discord.js";
-import { SpudJSError } from "./errors/SpudJSError";
+} from 'discord.js';
+import { SpudJSError } from './errors/SpudJSError';
 
 // TODO: UHH, do types go in separate files?
 type AcceptedSelectBuilders = StringSelectMenuBuilder | RoleSelectMenuBuilder;
-type ButtonNames = "previous" | "next" | "last" | "first" | "trash";
+type ButtonNames = 'previous' | 'next' | 'last' | 'first' | 'trash';
 
 interface Page {
     embed: EmbedBuilder;
@@ -44,7 +44,7 @@ export class PaginationBuilder extends Builder {
     fastSkip: boolean;
     customComponents?: ActionRowBuilder<ButtonBuilder | AcceptedSelectBuilders>;
     customComponentHandler?: Function;
-
+    deleteMessage: boolean;
     /**
      * Sets the interaction used to collect inputs.
      * @param interaction
@@ -54,9 +54,10 @@ export class PaginationBuilder extends Builder {
         this.interaction = interaction;
         this.pages = [];
         this.currentPage = 0;
-        this.editableButtons = ["previous", "next"];
+        this.editableButtons = ['previous', 'next'];
         this.trashBin = false;
         this.fastSkip = false;
+        this.deleteMessage = false;
     }
 
     /**
@@ -85,17 +86,19 @@ export class PaginationBuilder extends Builder {
      */
     addFastSkip(): this {
         this.fastSkip = true;
-        this.editableButtons.push("last");
-        this.editableButtons.push("first");
+        this.editableButtons.push('last');
+        this.editableButtons.push('first');
         return this;
     }
 
     /**
      * Adds an extra button that forcibly stops the collector.
+     * @param deleteMessage - Determines whether the message will get deleted if this instance is trashed.
      */
-    addTrashBin(): this {
+    addTrashBin(deleteMessage?: boolean): this {
+        if (deleteMessage) this.deleteMessage = deleteMessage;
         this.trashBin = true;
-        this.editableButtons.push("trash");
+        this.editableButtons.push('trash');
         return this;
     }
 
@@ -143,7 +146,7 @@ export class PaginationBuilder extends Builder {
             initialMessage = await (this.interaction as RepliableInteraction).reply(
                 messagePayload as InteractionReplyOptions
             );
-        } else throw new SpudJSError("Something fucking happened.");
+        } else throw new SpudJSError('Something fucking happened.');
 
         const collector = initialMessage.createMessageComponentCollector({
             filter,
@@ -152,19 +155,22 @@ export class PaginationBuilder extends Builder {
             idle: this.idle ? time : undefined
         });
 
-        collector.on("collect", async (i) => {
-            if (i.customId === "right") {
+        collector.on('collect', async (i) => {
+            if (i.customId === 'right') {
                 this.currentPage++;
-            } else if (i.customId === "right-fast") {
+            } else if (i.customId === 'right-fast') {
                 this.currentPage = totalPages;
-            } else if (i.customId === "left") {
+            } else if (i.customId === 'left') {
                 this.currentPage--;
-            } else if (i.customId === "left-fast") {
+            } else if (i.customId === 'left-fast') {
                 this.currentPage = 0;
+            } else if (i.customId === 'trash') {
+                await i.update({ components: [] });
+                return collector.stop();
             } else if (i.customId) {
                 if (this.customComponentHandler) await this.customComponentHandler(i);
             }
-
+            // TODO: trashBin implementation + collector end functions.
             navigation = this.createNavigation();
             totalPages = this.getPageCount();
 
@@ -172,6 +178,12 @@ export class PaginationBuilder extends Builder {
                 embeds: [this.getPageEmbed()],
                 components: navigation
             });
+        });
+
+        collector.on('end', async () => {
+            if (this.deleteMessage) {
+                await initialMessage.delete();
+            }
         });
     }
 
@@ -197,28 +209,28 @@ export class PaginationBuilder extends Builder {
 
         return {
             trash: new ButtonBuilder()
-                .setCustomId("trash")
-                .setEmoji("🗑")
+                .setCustomId('trash')
+                .setEmoji('🗑')
                 .setStyle(ButtonStyle.Danger)
                 .setDisabled(false),
             next: new ButtonBuilder()
-                .setCustomId("right")
-                .setEmoji("▶")
+                .setCustomId('right')
+                .setEmoji('▶')
                 .setStyle(ButtonStyle.Primary)
                 .setDisabled(currentPage === totalPage),
             last: new ButtonBuilder()
-                .setCustomId("right-fast")
-                .setEmoji("⏩")
+                .setCustomId('right-fast')
+                .setEmoji('⏩')
                 .setStyle(ButtonStyle.Primary)
                 .setDisabled(currentPage === totalPage),
             previous: new ButtonBuilder()
-                .setCustomId("left")
-                .setEmoji("◀")
+                .setCustomId('left')
+                .setEmoji('◀')
                 .setStyle(ButtonStyle.Primary)
                 .setDisabled(currentPage === 0),
             first: new ButtonBuilder()
-                .setCustomId("left-fast")
-                .setEmoji("⏪")
+                .setCustomId('left-fast')
+                .setEmoji('⏪')
                 .setStyle(ButtonStyle.Primary)
                 .setDisabled(currentPage === 0)
         };
@@ -255,7 +267,7 @@ export class PaginationBuilder extends Builder {
     }
 
     /**
-     * @returns This page's embed 
+     * @returns This page's embed
      */
     getPageEmbed(): EmbedBuilder {
         return this.getPageData().embed;
@@ -271,7 +283,7 @@ export class PaginationBuilder extends Builder {
 
     /**
      * @param page - The index of the page you would like to navigate to.
-     * @returns The current Page's embed and components if it has any. 
+     * @returns The current Page's embed and components if it has any.
      */
     setPage(page: number): Page {
         this.currentPage = page;

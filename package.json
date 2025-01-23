@@ -7,8 +7,8 @@
   "types": "types/index.d.ts",
   "files": [
     "build",
-    "README.md",
-    "types"
+    "types",
+    "README.md"
   ],
   "repository": {
     "url": "https://github.com/keita-sama/spud.js"
