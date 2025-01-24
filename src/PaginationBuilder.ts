@@ -140,7 +140,10 @@ export class PaginationBuilder extends Builder {
         this.customComponentHandler = handler;
         return this;
     }
-
+    /**
+     * Method to custom paginations buttons if you so wish. 
+     * @param name - Name of the component you want to edit
+    */
     editButton(name: ButtonNames, customStyle: ButtonBuilder | EditButtonSyle): this {
         if (customStyle instanceof ButtonBuilder) {
             this.buttons[name] = customStyle as ButtonBuilder;
