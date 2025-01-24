@@ -10,13 +10,20 @@ import {
     ButtonBuilder,
     ActionRowBuilder,
     StringSelectMenuBuilder,
-    RoleSelectMenuBuilder
+    RoleSelectMenuBuilder,
+    ComponentEmojiResolvable
 } from 'discord.js';
 import { SpudJSError } from './errors/SpudJSError';
 
 // TODO: UHH, do types go in separate files?
 type AcceptedSelectBuilders = StringSelectMenuBuilder | RoleSelectMenuBuilder;
 type ButtonNames = 'previous' | 'next' | 'last' | 'first' | 'trash';
+
+type EditButtonSyle = { style?: ButtonStyle; emoji?: ComponentEmojiResolvable; label?: string } & (
+    | { style: ButtonStyle }
+    | { emoji: ComponentEmojiResolvable }
+    | { label: string }
+);
 
 interface Page {
     embed: EmbedBuilder;
@@ -45,6 +52,8 @@ export class PaginationBuilder extends Builder {
     customComponents?: ActionRowBuilder<ButtonBuilder | AcceptedSelectBuilders>;
     customComponentHandler?: Function;
     deleteMessage: boolean;
+
+    buttons: Record<ButtonNames, ButtonBuilder>;
     /**
      * Sets the interaction used to collect inputs.
      * @param interaction
@@ -58,6 +67,18 @@ export class PaginationBuilder extends Builder {
         this.trashBin = false;
         this.fastSkip = false;
         this.deleteMessage = false;
+
+        this.buttons = {
+            trash: new ButtonBuilder()
+                .setCustomId('trash')
+                .setEmoji('🗑')
+                .setStyle(ButtonStyle.Danger)
+                .setDisabled(false),
+            next: new ButtonBuilder().setCustomId('right').setEmoji('▶').setStyle(ButtonStyle.Primary),
+            last: new ButtonBuilder().setCustomId('right-fast').setEmoji('⏩').setStyle(ButtonStyle.Primary),
+            previous: new ButtonBuilder().setCustomId('left').setEmoji('◀').setStyle(ButtonStyle.Primary),
+            first: new ButtonBuilder().setCustomId('left-fast').setEmoji('⏪').setStyle(ButtonStyle.Primary)
+        };
     }
 
     /**
@@ -120,6 +141,16 @@ export class PaginationBuilder extends Builder {
         return this;
     }
 
+    editButton(name: ButtonNames, customStyle: ButtonBuilder | EditButtonSyle): this {
+        if (customStyle instanceof ButtonBuilder) {
+            this.buttons[name] = customStyle as ButtonBuilder;
+        } else {            
+            if (customStyle.style) this.buttons[name].setStyle(customStyle.style);
+            if (customStyle.label) this.buttons[name].setLabel(customStyle.label);
+            if (customStyle.emoji) this.buttons[name].setEmoji(customStyle.emoji);
+        }
+        return this;
+    }
     /**
      * Handles the interaction.
      * @async
@@ -206,34 +237,17 @@ export class PaginationBuilder extends Builder {
     getPaginationButtons(): Record<ButtonNames, ButtonBuilder> {
         const totalPage = this.getPageCount();
         const currentPage = this.currentPage;
+        const { trash, last, first, previous, next } = this.buttons;
 
-        return {
-            trash: new ButtonBuilder()
-                .setCustomId('trash')
-                .setEmoji('🗑')
-                .setStyle(ButtonStyle.Danger)
-                .setDisabled(false),
-            next: new ButtonBuilder()
-                .setCustomId('right')
-                .setEmoji('▶')
-                .setStyle(ButtonStyle.Primary)
-                .setDisabled(currentPage === totalPage),
-            last: new ButtonBuilder()
-                .setCustomId('right-fast')
-                .setEmoji('⏩')
-                .setStyle(ButtonStyle.Primary)
-                .setDisabled(currentPage === totalPage),
-            previous: new ButtonBuilder()
-                .setCustomId('left')
-                .setEmoji('◀')
-                .setStyle(ButtonStyle.Primary)
-                .setDisabled(currentPage === 0),
-            first: new ButtonBuilder()
-                .setCustomId('left-fast')
-                .setEmoji('⏪')
-                .setStyle(ButtonStyle.Primary)
-                .setDisabled(currentPage === 0)
+        this.buttons = {
+            trash,
+            next: next.setDisabled(currentPage === totalPage),
+            last: last.setDisabled(currentPage === totalPage),
+            previous: previous.setDisabled(currentPage === 0),
+            first: first.setDisabled(currentPage === 0)
         };
+
+        return this.buttons;
     }
 
     createNavigation() {
