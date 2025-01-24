@@ -185,7 +185,7 @@ export class PaginationBuilder extends Builder {
         const collector = initialMessage.createMessageComponentCollector({
             filter,
             max,
-            time,
+            time: this.idle ? undefined : time,
             idle: this.idle ? time : undefined
         });
 
@@ -217,6 +217,9 @@ export class PaginationBuilder extends Builder {
         collector.on('end', async () => {
             if (this.deleteMessage) {
                 await initialMessage.delete();
+            }
+            else {
+                await initialMessage.edit({ components: [] });
             }
         });
     }
