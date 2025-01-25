@@ -3,7 +3,7 @@
     // Enable latest features
     "lib": ["ESNext", "DOM"],
     "target": "ESNext",
-    "module": "ESNext",
+    //"module": "ESNext",
     "moduleDetection": "force",
     "moduleResolution": "node",
 
@@ -18,7 +18,7 @@
 
     "declaration": true,
     "declarationDir": "./types",
-    "outDir": "dist/mjs"
+    // "outDir": "dist/mjs"
   },
   "include": ["src/**/**.ts", "./index.ts"],
   "exclude": ["node_modules", "dist"]

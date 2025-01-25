@@ -1,16 +1,20 @@
 {
   "name": "spud.js",
   "module": "index.ts",
-  "version": "4.0.0-dev33",
+  "version": "4.0.0-dev34",
   "type": "module",
   "main": "dist/index.js",
+  "scripts": {
+    "build:cjs": "npx tsc --outDir ./dist/cjs --module CommonJS",
+    "build:mjs": "npx tsc --outDir ./dist/mjs --module ESNext"
+  },
   "exports": {
     "import": "./dist/mjs/index.js",
     "require": "./dist/cjs/index.js"
   },
   "types": "types/index.d.ts",
   "files": [
-    "build",
+    "dist",
     "types",
     "README.md"
   ],
