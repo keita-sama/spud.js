@@ -1,12 +1,14 @@
-<h1 align='center'>Spud.js</h1>
 
-prolly spud.js banner + those weird embedded links stuff. ill do that later
+<p align='center'>
+    <img src="assets/spud logo.png" width='70%'>
+    <h3 align='center'>Pagination focused library for Discord.js</h3>
+</p>
+<a href='https://discord.gg/EsfbnxTdej'><img src='https://img.shields.io/discord/925648118530314280?color=5865F2&logo=discord&logoColor=white'></a>
+<a href=''><img src='https://img.shields.io/npm/d18m/spud.js'></a>
 
-<h3 align='center'>Pagination focused library for Discord.js</h3>
+# Quick Start
 
-## Quick Start
-
-### Installation
+## Installation
 ```
 npm i spud.js@latest
 ```
@@ -17,7 +19,7 @@ const { PaginationBuilder } = require('spud.js');
 import { PaginationBuilder } from 'spud.js';
 ```
 
-### How to use?
+## How to use?
 To get started, make sure you have the necessary boilerplate for your discord bot. 
 <br>
 Then in either a `InteractionCreate` or `MessageCreate` event, pass the respective object into the `PaginationBuilder` constructor.
