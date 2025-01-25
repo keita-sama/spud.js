@@ -1,9 +1,13 @@
 {
   "name": "spud.js",
   "module": "index.ts",
-  "version": "4.0.0-dev2",
+  "version": "4.0.0-dev33",
   "type": "module",
   "main": "dist/index.js",
+  "exports": {
+    "import": "./dist/mjs/index.js",
+    "require": "./dist/cjs/index.js"
+  },
   "types": "types/index.d.ts",
   "files": [
     "build",

@@ -1,6 +1,6 @@
 
 <p align='center'>
-    <img src="assets/spud logo.png" width='70%'>
+    <img src="https://github.com/keita-sama/spud.js/blob/dev-test/assets/spud%20logo.png?raw=true" width='70%'>
     <h3 align='center'>Pagination focused library for Discord.js</h3>
 </p>
 

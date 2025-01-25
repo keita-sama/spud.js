@@ -1,7 +1,18 @@
 import { Builder } from './Builder';
-import { type ButtonInteraction, type RepliableInteraction, Message, EmbedBuilder, ButtonBuilder, ActionRowBuilder, StringSelectMenuBuilder, RoleSelectMenuBuilder } from 'discord.js';
+import { type ButtonInteraction, type RepliableInteraction, Message, ButtonStyle, EmbedBuilder, ButtonBuilder, ActionRowBuilder, StringSelectMenuBuilder, RoleSelectMenuBuilder, ComponentEmojiResolvable } from 'discord.js';
 type AcceptedSelectBuilders = StringSelectMenuBuilder | RoleSelectMenuBuilder;
 type ButtonNames = 'previous' | 'next' | 'last' | 'first' | 'trash';
+type EditButtonSyle = {
+    style?: ButtonStyle;
+    emoji?: ComponentEmojiResolvable;
+    label?: string;
+} & ({
+    style: ButtonStyle;
+} | {
+    emoji: ComponentEmojiResolvable;
+} | {
+    label: string;
+});
 interface Page {
     embed: EmbedBuilder;
     components?: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder>;
@@ -19,6 +30,7 @@ export declare class PaginationBuilder extends Builder {
     customComponents?: ActionRowBuilder<ButtonBuilder | AcceptedSelectBuilders>;
     customComponentHandler?: Function;
     deleteMessage: boolean;
+    buttons: Record<ButtonNames, ButtonBuilder>;
     /**
      * Sets the interaction used to collect inputs.
      * @param interaction
@@ -42,7 +54,7 @@ export declare class PaginationBuilder extends Builder {
      * Adds an extra button that forcibly stops the collector.
      * @param deleteMessage - Determines whether the message will get deleted if this instance is trashed.
      */
-    addTrashBin(deleteMessage: boolean): this;
+    addTrashBin(deleteMessage?: boolean): this;
     /**
      * Sets custom components that will be available regardless of page.
      * @param customComponents
@@ -53,6 +65,11 @@ export declare class PaginationBuilder extends Builder {
      * @param handler
      */
     setCustomComponentHandler(handler: (i: ButtonInteraction) => any): this;
+    /**
+     * Method to custom paginations buttons if you so wish.
+     * @param name - Name of the component you want to edit
+    */
+    editButton(name: ButtonNames, customStyle: ButtonBuilder | EditButtonSyle): this;
     /**
      * Handles the interaction.
      * @async
