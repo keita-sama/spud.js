@@ -3,8 +3,11 @@
     <img src="assets/spud logo.png" width='70%'>
     <h3 align='center'>Pagination focused library for Discord.js</h3>
 </p>
+
+<p align='center'>
 <a href='https://discord.gg/EsfbnxTdej'><img src='https://img.shields.io/discord/925648118530314280?color=5865F2&logo=discord&logoColor=white'></a>
 <a href=''><img src='https://img.shields.io/npm/d18m/spud.js'></a>
+</p>
 
 # Quick Start
 
