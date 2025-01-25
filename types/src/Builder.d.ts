@@ -1,6 +1,7 @@
 import { type MessageReplyOptions, type RepliableInteraction, Message } from "discord.js";
 interface InteractionOptions {
     type: "reply" | "send";
+    filterMessage?: string;
 }
 type SafeMessageOptions = Omit<MessageReplyOptions, "embeds" | "components">;
 type FilterFunction<F> = (...args: F[]) => boolean;

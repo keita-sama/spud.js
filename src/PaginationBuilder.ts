@@ -11,7 +11,8 @@ import {
     ActionRowBuilder,
     StringSelectMenuBuilder,
     RoleSelectMenuBuilder,
-    ComponentEmojiResolvable
+    ComponentEmojiResolvable,
+    MessageFlags
 } from 'discord.js';
 import { SpudJSError } from './errors/SpudJSError';
 
@@ -69,11 +70,7 @@ export class PaginationBuilder extends Builder {
         this.deleteMessage = false;
 
         this.buttons = {
-            trash: new ButtonBuilder()
-                .setCustomId('trash')
-                .setEmoji('🗑')
-                .setStyle(ButtonStyle.Danger)
-                .setDisabled(false),
+            trash: new ButtonBuilder().setCustomId('trash').setEmoji('🗑').setStyle(ButtonStyle.Danger),
             next: new ButtonBuilder().setCustomId('right').setEmoji('▶').setStyle(ButtonStyle.Primary),
             last: new ButtonBuilder().setCustomId('right-fast').setEmoji('⏩').setStyle(ButtonStyle.Primary),
             previous: new ButtonBuilder().setCustomId('left').setEmoji('◀').setStyle(ButtonStyle.Primary),
@@ -107,8 +104,8 @@ export class PaginationBuilder extends Builder {
      */
     addFastSkip(): this {
         this.fastSkip = true;
-        this.editableButtons.unshift('first');
         this.editableButtons.push('last');
+        this.editableButtons.unshift('first');
         return this;
     }
 
@@ -141,13 +138,13 @@ export class PaginationBuilder extends Builder {
         return this;
     }
     /**
-     * Method to custom paginations buttons if you so wish. 
+     * Method to custom paginations buttons if you so wish.
      * @param name - Name of the component you want to edit
-    */
+     */
     editButton(name: ButtonNames, customStyle: ButtonBuilder | EditButtonSyle): this {
         if (customStyle instanceof ButtonBuilder) {
             this.buttons[name] = customStyle as ButtonBuilder;
-        } else {            
+        } else {
             if (customStyle.style) this.buttons[name].setStyle(customStyle.style);
             if (customStyle.label) this.buttons[name].setLabel(customStyle.label);
             if (customStyle.emoji) this.buttons[name].setEmoji(customStyle.emoji);
@@ -214,11 +211,23 @@ export class PaginationBuilder extends Builder {
             });
         });
 
+        collector.on('ignore', async (i) => {
+            if (this.interactionOptions?.filterMessage) {
+                return await i.reply({
+                    content: this.interactionOptions.filterMessage,
+                    flags: [MessageFlags.Ephemeral]
+                });
+            } else {
+                return await i.reply({
+                    content: 'This interaction was filtered. Did you invoke the command?',
+                    flags: [MessageFlags.Ephemeral]
+                });
+            }
+        });
         collector.on('end', async () => {
             if (this.deleteMessage) {
                 await initialMessage.delete();
-            }
-            else {
+            } else {
                 await initialMessage.edit({ components: [] });
             }
         });
