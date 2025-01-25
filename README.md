@@ -25,7 +25,7 @@ import { PaginationBuilder } from 'spud.js';
 ## How to use?
 To get started, make sure you have the necessary boilerplate for your discord bot. 
 <br>
-Then in either a `InteractionCreate` or `MessageCreate` event, pass the respective object into the `PaginationBuilder` constructor.
+Then, within either an `InteractionCreate` or `MessageCreate` event, pass the corresponding object into the `PaginationBuilder` constructor.
 
 ```js
 const { PaginationBuilder } = require('spud.js');
@@ -56,7 +56,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 This is all that's needed for an extremely basic pagination setup. There are many various options you can adjust i.e additonal buttons, custom buttons, filters, collector options and much more.
 <br><br>
 To see all available options, check your intellisense or browse the documentation and join our discord server for any questions!
-
 
 ## Acknowledgements
 
