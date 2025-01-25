@@ -9,8 +9,8 @@
     "build:mjs": "npx tsc --outDir ./dist/mjs --module ESNext"
   },
   "exports": {
-    "import": "./dist/mjs/index.js",
-    "require": "./dist/cjs/index.js"
+    "import": "./dist/mjs/index.mjs",
+    "require": "./dist/cjs/index.cjs"
   },
   "types": "types/index.d.ts",
   "files": [
