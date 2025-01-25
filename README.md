@@ -45,6 +45,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         new ButtonBuilder()
                             .setCustomId('page_one_button')
                             .setLabel('First page!')
+                            .setStyle(ButtonStyle.Primary)
                     )
             }
         ]);
