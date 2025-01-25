@@ -7,7 +7,8 @@ import {
 } from "discord.js";
 
 interface InteractionOptions {
-    type: "reply" | "send";
+    type: "reply" | "send",
+    filterMessage?: string;
 }
 
 type SafeMessageOptions = Omit<MessageReplyOptions, "embeds" | "components">;
@@ -44,6 +45,7 @@ export class Builder {
                 collectorInteraction.user.id === (this.interaction as Message).author.id;
         }
 
+        // TODO: ADD A FILTER MESSAGE THING, there's indication,
         this.time = 15 * 1000; // 15 seconds default;
     }
 

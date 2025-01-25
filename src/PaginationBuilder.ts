@@ -107,8 +107,8 @@ export class PaginationBuilder extends Builder {
      */
     addFastSkip(): this {
         this.fastSkip = true;
+        this.editableButtons.unshift('first');
         this.editableButtons.push('last');
-        this.editableButtons.push('first');
         return this;
     }
 
