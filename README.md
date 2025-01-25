@@ -40,6 +40,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 embed: new EmbedBuilder()
                     .setTitle('My first page.')
                     .setDescription('With a cool description'),
+                components: new ActionRowBuilder()
+                    .setComponents(
+                        new ButtonBuilder()
+                            .setCustomId('page_one_button')
+                            .setLabel('First page!')
+                    )
             }
         ]);
     
@@ -47,6 +53,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 })
 ```
 
-This is all that's needed for an extremely basic pagination setup. There are many various options you can adjust i.e additonal buttons, custom buttons, filters, collector options and more.
+This is all that's needed for an extremely basic pagination setup. There are many various options you can adjust i.e additonal buttons, custom buttons, filters, collector options and much more.
 <br><br>
-To see all available options, check your intellisense or browse the documentation
+To see all available options, check your intellisense or browse the documentation and join our discord server for any questions!
+
+
+## Acknowledgements
+
+### [Duro](https://github.com/DuroCodes), [Aljoberg](https://github.com/Aljoberg), [GoodBoyNeon](https://github.com/GoodBoyNeon) and [yuyulbm](https://github.com/yuyulbm).
