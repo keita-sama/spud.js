@@ -23,9 +23,7 @@ import { PaginationBuilder } from 'spud.js';
 ```
 
 ## How to use?
-To get started, make sure you have the necessary boilerplate for your discord bot. 
-<br>
-Then, within either an `InteractionCreate` or `MessageCreate` event, pass the corresponding object into the `PaginationBuilder` constructor.
+To get started, make sure you have the necessary boilerplate for your discord bot. Then, within either an `InteractionCreate` or `MessageCreate` event, pass the corresponding object into the `PaginationBuilder` constructor.
 
 ```js
 const { PaginationBuilder } = require('spud.js');
