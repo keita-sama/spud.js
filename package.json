@@ -1,12 +1,13 @@
 {
   "name": "spud.js",
   "module": "index.ts",
-  "version": "4.0.0-dev36",
+  "version": "4.0.0-dev4",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "build:cjs": "npx tsc --outDir ./dist/cjs --module CommonJS",
-    "build:mjs": "npx tsc --outDir ./dist/mjs --module ESNext"
+    "build:mjs": "npx tsc --outDir ./dist/mjs --module ESNext",
+    "prepare": "echo 'Preparing for release' && bun run build:cjs && bun run build:mjs && bun run rename.js "
   },
   "exports": {
     "import": "./dist/mjs/index.mjs",

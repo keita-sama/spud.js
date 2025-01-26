@@ -1,5 +1,5 @@
 import { Builder } from './Builder';
-import { type ButtonInteraction, type RepliableInteraction, Message, ButtonStyle, EmbedBuilder, ButtonBuilder, ActionRowBuilder, StringSelectMenuBuilder, RoleSelectMenuBuilder, ComponentEmojiResolvable } from 'discord.js';
+import { type RepliableInteraction, ButtonInteraction, Message, ButtonStyle, EmbedBuilder, ButtonBuilder, ActionRowBuilder, StringSelectMenuBuilder, RoleSelectMenuBuilder, ComponentEmojiResolvable } from 'discord.js';
 type AcceptedSelectBuilders = StringSelectMenuBuilder | RoleSelectMenuBuilder;
 type ButtonNames = 'previous' | 'next' | 'last' | 'first' | 'trash';
 type EditButtonSyle = {
@@ -68,7 +68,7 @@ export declare class PaginationBuilder extends Builder {
     /**
      * Method to custom paginations buttons if you so wish.
      * @param name - Name of the component you want to edit
-    */
+     */
     editButton(name: ButtonNames, customStyle: ButtonBuilder | EditButtonSyle): this;
     /**
      * Handles the interaction.
