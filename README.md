@@ -52,9 +52,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 })
 ```
 
-This is all that's needed for an extremely basic pagination setup. There are many various options you can adjust i.e additonal buttons, custom buttons, filters, collector options and much more.
+This is all that's needed for an extremely basic pagination setup. There are various options you can adjust i.e additonal buttons, custom buttons, filters, collector options and more to fine tune exactly how you want it to operate.
 <br><br>
-To see all available options, check your intellisense or browse the documentation and join our discord server for any questions!
+Check your intellisense or browse the documentation to see all available options and join our discord server for any questions!
 
 ## Acknowledgements
 
