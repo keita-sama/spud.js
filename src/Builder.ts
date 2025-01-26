@@ -125,5 +125,3 @@ export class Builder {
         return this.interaction instanceof BaseInteraction;
     }
 }
-
-// TODO: Add old methods; new one for consistency;

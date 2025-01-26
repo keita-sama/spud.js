@@ -1,9 +1,9 @@
 import { Builder } from './Builder';
 import {
-    type ButtonInteraction,
     type MessageReplyOptions,
     type InteractionReplyOptions,
     type RepliableInteraction,
+    ButtonInteraction,
     Message,
     ButtonStyle,
     EmbedBuilder,
@@ -12,9 +12,13 @@ import {
     StringSelectMenuBuilder,
     RoleSelectMenuBuilder,
     ComponentEmojiResolvable,
-    MessageFlags
+    MessageFlags,
+    TextChannel,
+    InteractionCallbackResponse,
+    InteractionCallbackResource
 } from 'discord.js';
 import { SpudJSError } from './errors/SpudJSError';
+import { transpileModule } from 'typescript';
 
 // TODO: UHH, do types go in separate files?
 type AcceptedSelectBuilders = StringSelectMenuBuilder | RoleSelectMenuBuilder;
@@ -161,25 +165,27 @@ export class PaginationBuilder extends Builder {
         let navigation = this.createNavigation();
         let totalPages = this.getPageCount();
 
-        const messagePayload: MessageReplyOptions = {
+        const messagePayload: MessageReplyOptions & InteractionReplyOptions = {
             embeds: [this.getPageEmbed()],
             components: navigation,
             allowedMentions: { repliedUser: this.mention }
         };
 
         if (this.messageOptions?.content) messagePayload.content = this.messageOptions.content;
-        // if (this.messageOptions?.files) messagePayload.files = this.messageOptions.content;
 
         let initialMessage;
         if (this.isMessage()) {
             initialMessage = await (this.interaction as Message).reply(messagePayload);
         } else if (this.isInteraction()) {
-            initialMessage = await (this.interaction as RepliableInteraction).reply(
-                messagePayload as InteractionReplyOptions
-            );
+            if (this.interaction instanceof ButtonInteraction) {
+                const response = await this.interaction.reply({ ...messagePayload, withResponse: true });
+                initialMessage = response.resource?.message;
+            } else {
+                initialMessage = await (this.interaction as RepliableInteraction).reply(messagePayload);
+            }
         } else throw new SpudJSError('Something fucking happened.');
 
-        const collector = initialMessage.createMessageComponentCollector({
+        const collector = initialMessage!.createMessageComponentCollector({
             filter,
             max,
             time: this.idle ? undefined : time,
@@ -226,9 +232,9 @@ export class PaginationBuilder extends Builder {
         });
         collector.on('end', async () => {
             if (this.deleteMessage) {
-                await initialMessage.delete();
+                await initialMessage!.delete();
             } else {
-                await initialMessage.edit({ components: [] });
+                await initialMessage!.edit({ components: [] });
             }
         });
     }
@@ -243,7 +249,7 @@ export class PaginationBuilder extends Builder {
 
         if (this.fastSkip) {
             paginationComponents.unshift(buttons.first);
-            paginationComponents.unshift(buttons.last);
+            paginationComponents.push(buttons.last);
         }
 
         return paginationComponents;
