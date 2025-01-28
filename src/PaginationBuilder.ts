@@ -13,12 +13,11 @@ import {
     RoleSelectMenuBuilder,
     ComponentEmojiResolvable,
     MessageFlags,
-    TextChannel,
-    InteractionCallbackResponse,
-    InteractionCallbackResource
+    Collection,
+    MessageComponentInteraction,
+    ReadonlyCollection
 } from 'discord.js';
 import { SpudJSError } from './errors/SpudJSError';
-import { transpileModule } from 'typescript';
 
 // TODO: UHH, do types go in separate files?
 type AcceptedSelectBuilders = StringSelectMenuBuilder | RoleSelectMenuBuilder;
@@ -55,7 +54,10 @@ export class PaginationBuilder extends Builder {
     trashBin: boolean;
     fastSkip: boolean;
     customComponents?: ActionRowBuilder<ButtonBuilder | AcceptedSelectBuilders>;
-    customComponentHandler?: Function;
+    customComponentHandler?: {
+        onCollect?: (i: MessageComponentInteraction) => unknown;
+        onEnd?: (collected?: ReadonlyCollection<any, any>, reason?: string) => unknown;
+    };
     deleteMessage: boolean;
 
     buttons: Record<ButtonNames, ButtonBuilder>;
@@ -69,6 +71,7 @@ export class PaginationBuilder extends Builder {
         this.pages = [];
         this.currentPage = 0;
         this.editableButtons = ['previous', 'next'];
+        this.customComponentHandler = {};
         this.trashBin = false;
         this.fastSkip = false;
         this.deleteMessage = false;
@@ -133,12 +136,22 @@ export class PaginationBuilder extends Builder {
         return this;
     }
 
+    // TODO: FIX THE COLLECTION TYPE...maybe.
     /**
      * Sets the function used to handling custom components.
      * @param handler
      */
-    setCustomComponentHandler(handler: (i: ButtonInteraction) => any): this {
-        this.customComponentHandler = handler;
+    setCustomComponentHandler(
+        onCollect?: (i: MessageComponentInteraction) => unknown,
+        onEnd?: (collected?: ReadonlyCollection<any, any>, reason?: string) => unknown
+    ): this {
+        if (onCollect) {
+            this.customComponentHandler!.onCollect = onCollect;
+        }
+        if (onEnd) {
+            this.customComponentHandler!.onEnd = onEnd;
+        }
+
         return this;
     }
     /**
@@ -205,7 +218,7 @@ export class PaginationBuilder extends Builder {
                 await i.update({ components: [] });
                 return collector.stop();
             } else if (i.customId) {
-                if (this.customComponentHandler) await this.customComponentHandler(i);
+                if (this.customComponentHandler?.onCollect) await this.customComponentHandler!.onCollect(i)
             }
             // TODO: trashBin implementation + collector end functions.
             navigation = this.createNavigation();
@@ -230,11 +243,14 @@ export class PaginationBuilder extends Builder {
                 });
             }
         });
-        collector.on('end', async () => {
+        collector.on('end', async (collected, reason) => {
             if (this.deleteMessage) {
                 await initialMessage!.delete();
             } else {
                 await initialMessage!.edit({ components: [] });
+            }
+            if (this.customComponentHandler?.onEnd) {
+                this.customComponentHandler?.onEnd(collected, reason)
             }
         });
     }

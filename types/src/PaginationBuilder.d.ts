@@ -1,5 +1,5 @@
 import { Builder } from './Builder';
-import { type RepliableInteraction, ButtonInteraction, Message, ButtonStyle, EmbedBuilder, ButtonBuilder, ActionRowBuilder, StringSelectMenuBuilder, RoleSelectMenuBuilder, ComponentEmojiResolvable } from 'discord.js';
+import { type RepliableInteraction, Message, ButtonStyle, EmbedBuilder, ButtonBuilder, ActionRowBuilder, StringSelectMenuBuilder, RoleSelectMenuBuilder, ComponentEmojiResolvable, MessageComponentInteraction, ReadonlyCollection } from 'discord.js';
 type AcceptedSelectBuilders = StringSelectMenuBuilder | RoleSelectMenuBuilder;
 type ButtonNames = 'previous' | 'next' | 'last' | 'first' | 'trash';
 type EditButtonSyle = {
@@ -28,7 +28,10 @@ export declare class PaginationBuilder extends Builder {
     trashBin: boolean;
     fastSkip: boolean;
     customComponents?: ActionRowBuilder<ButtonBuilder | AcceptedSelectBuilders>;
-    customComponentHandler?: Function;
+    customComponentHandler?: {
+        onCollect?: (i: MessageComponentInteraction) => unknown;
+        onEnd?: (collected?: ReadonlyCollection<any, any>, reason?: string) => unknown;
+    };
     deleteMessage: boolean;
     buttons: Record<ButtonNames, ButtonBuilder>;
     /**
@@ -64,7 +67,7 @@ export declare class PaginationBuilder extends Builder {
      * Sets the function used to handling custom components.
      * @param handler
      */
-    setCustomComponentHandler(handler: (i: ButtonInteraction) => any): this;
+    setCustomComponentHandler(onCollect?: (i: MessageComponentInteraction) => unknown, onEnd?: (collected?: ReadonlyCollection<any, any>, reason?: string) => unknown): this;
     /**
      * Method to custom paginations buttons if you so wish.
      * @param name - Name of the component you want to edit
