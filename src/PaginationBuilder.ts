@@ -15,7 +15,10 @@ import {
     MessageFlags,
     Collection,
     MessageComponentInteraction,
-    ReadonlyCollection
+    ReadonlyCollection,
+    Interaction,
+    InteractionResponse,
+    BaseInteraction
 } from 'discord.js';
 import { SpudJSError } from './errors/SpudJSError';
 
@@ -56,7 +59,7 @@ export class PaginationBuilder extends Builder {
     customComponents?: ActionRowBuilder<ButtonBuilder | AcceptedSelectBuilders>;
     customComponentHandler?: {
         onCollect?: (i: MessageComponentInteraction) => unknown;
-        onEnd?: (collected?: ReadonlyCollection<any, any>, reason?: string) => unknown;
+        onEnd?: (collected?: ReadonlyCollection<any, any>, reason?: string, initialMessage?: Message) => unknown;
     };
     deleteMessage: boolean;
 
@@ -143,7 +146,7 @@ export class PaginationBuilder extends Builder {
      */
     setCustomComponentHandler(
         onCollect?: (i: MessageComponentInteraction) => unknown,
-        onEnd?: (collected?: ReadonlyCollection<any, any>, reason?: string) => unknown
+        onEnd?: (collected?: ReadonlyCollection<any, any>, reason?: string, initialMessage?: Message) => unknown
     ): this {
         if (onCollect) {
             this.customComponentHandler!.onCollect = onCollect;
@@ -244,13 +247,18 @@ export class PaginationBuilder extends Builder {
             }
         });
         collector.on('end', async (collected, reason) => {
+            if (this.customComponentHandler?.onEnd) {
+                if (initialMessage instanceof Message) {
+                    this.customComponentHandler?.onEnd(collected, reason, initialMessage)
+                }
+                else if (initialMessage instanceof InteractionResponse) {
+                    this.customComponentHandler?.onEnd(collected, reason, await initialMessage.fetch() as Message)
+                }
+            }
             if (this.deleteMessage) {
                 await initialMessage!.delete();
             } else {
                 await initialMessage!.edit({ components: [] });
-            }
-            if (this.customComponentHandler?.onEnd) {
-                this.customComponentHandler?.onEnd(collected, reason)
             }
         });
     }
