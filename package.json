@@ -1,7 +1,7 @@
 {
   "name": "spud.js",
   "module": "index.ts",
-  "version": "4.0.0-dev44",
+  "version": "4.0.0-dev45",
   "type": "module",
   "main": "dist/mjs/index.js",
   "scripts": {
