@@ -30,7 +30,7 @@ export declare class PaginationBuilder extends Builder {
     customComponents?: ActionRowBuilder<ButtonBuilder | AcceptedSelectBuilders>;
     customComponentHandler?: {
         onCollect?: (i: MessageComponentInteraction) => unknown;
-        onEnd?: (collected?: ReadonlyCollection<any, any>, reason?: string) => unknown;
+        onEnd?: (collected?: ReadonlyCollection<any, any>, reason?: string, initialMessage?: Message) => unknown;
     };
     deleteMessage: boolean;
     buttons: Record<ButtonNames, ButtonBuilder>;
@@ -67,7 +67,7 @@ export declare class PaginationBuilder extends Builder {
      * Sets the function used to handling custom components.
      * @param handler
      */
-    setCustomComponentHandler(onCollect?: (i: MessageComponentInteraction) => unknown, onEnd?: (collected?: ReadonlyCollection<any, any>, reason?: string) => unknown): this;
+    setCustomComponentHandler(onCollect?: (i: MessageComponentInteraction) => unknown, onEnd?: (collected?: ReadonlyCollection<any, any>, reason?: string, initialMessage?: Message) => unknown): this;
     /**
      * Method to custom paginations buttons if you so wish.
      * @param name - Name of the component you want to edit
