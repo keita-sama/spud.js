@@ -24,5 +24,4 @@ also includes a custom handler function that lets you handle `collect` and `end`
 
 ## Removals
 - Removed Group and Menu builders. 
-<br>
 - - To me, they always felt out of place and now that there are many types of Select Menus it was hard to justify supporting  this somewhat trivial feature, especially when the logic was easy enough to implement yourself. As for the Group, they're now possible to implement with the new custom handler system :) You need to do a bit more work yourself, but it gives you the flexibility that standard pagination has.
