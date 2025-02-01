@@ -13,13 +13,12 @@ import {
     RoleSelectMenuBuilder,
     ComponentEmojiResolvable,
     MessageFlags,
-    Collection,
     MessageComponentInteraction,
     ReadonlyCollection,
-    Interaction,
     InteractionResponse,
-    BaseInteraction
+    ChannelType,
 } from 'discord.js';
+
 import { SpudJSError } from './errors/SpudJSError';
 
 // TODO: UHH, do types go in separate files?
@@ -50,7 +49,7 @@ are endless!
  * Represents a Pagination Instance
  * @class
  */
-export class PaginationBuilder extends Builder {
+export class PaginationBuilder<T extends RepliableInteraction | Message> extends Builder<T> {
     pages: Page[];
     currentPage: number;
     editableButtons: ButtonNames[];
@@ -68,7 +67,7 @@ export class PaginationBuilder extends Builder {
      * Sets the interaction used to collect inputs.
      * @param interaction
      */
-    constructor(interaction: RepliableInteraction | Message) {
+    constructor(interaction: T) {
         super(interaction);
         this.interaction = interaction;
         this.pages = [];
@@ -178,6 +177,9 @@ export class PaginationBuilder extends Builder {
     async send(): Promise<void> {
         const { filter, maxInteractions: max, time } = this;
 
+        if (
+            this.interaction.channel?.type === ChannelType.GroupDM
+        ) return;
         let navigation = this.createNavigation();
         let totalPages = this.getPageCount();
 

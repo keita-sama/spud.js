@@ -3,7 +3,9 @@ import {
     type MessageReplyOptions,
     type RepliableInteraction,
     Message,
-    BaseInteraction
+    BaseInteraction,
+    MessageComponentInteraction,
+    CollectorFilter,
 } from "discord.js";
 
 interface InteractionOptions {
@@ -12,18 +14,18 @@ interface InteractionOptions {
 }
 
 type SafeMessageOptions = Omit<MessageReplyOptions, "embeds" | "components">;
-type FilterFunction<F> = (...args: F[]) => boolean;
 
 /**
  * Class representing the core. Implements standard methods.
  * @class
+ * @abstract
  */
-export class Builder {
-    interaction: RepliableInteraction | Message;
+export class Builder<T extends RepliableInteraction | Message> {
+    interaction: T;
     mention: boolean;
     idle: boolean;
     time: number;
-    filter: FilterFunction<any>;
+    filter: CollectorFilter<[MessageComponentInteraction]>;
     interactionOptions: any; // FIXME
     messageOptions?: SafeMessageOptions;
     maxInteractions?: number;
@@ -31,17 +33,17 @@ export class Builder {
     /** Intialize the interaction to use
      * @param interaction - Interaction used to attach the collector.
      */
-    constructor(interaction: RepliableInteraction | Message) {
+    constructor(interaction: T) {
         this.interaction = interaction;
         this.mention = true;
         this.idle = false;
 
         // Default to Interaction, change to message if detected.
-        this.filter = (collectorInteraction: Interaction) =>
+        this.filter = (collectorInteraction: MessageComponentInteraction) =>
             collectorInteraction.user.id === (this.interaction as RepliableInteraction).user.id;
 
         if (this.interaction instanceof Message) {
-            this.filter = (collectorInteraction: Interaction) =>
+            this.filter = (collectorInteraction: MessageComponentInteraction) =>
                 collectorInteraction.user.id === (this.interaction as Message).author.id;
         }
 
@@ -72,7 +74,7 @@ export class Builder {
      * @param customFilter
 
      */
-    setCustomFilter(customFilter: FilterFunction<any>): this {
+    setCustomFilter(customFilter: CollectorFilter<MessageComponentInteraction[]>): this {
         this.filter = customFilter;
         return this;
     }
