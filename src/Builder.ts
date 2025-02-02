@@ -1,11 +1,11 @@
 import {
-    type Interaction,
     type MessageReplyOptions,
     type RepliableInteraction,
     Message,
     BaseInteraction,
     MessageComponentInteraction,
     CollectorFilter,
+    Interaction,
 } from "discord.js";
 
 interface InteractionOptions {
@@ -39,12 +39,14 @@ export class Builder<T extends RepliableInteraction | Message> {
         this.idle = false;
 
         // Default to Interaction, change to message if detected.
-        this.filter = (collectorInteraction: MessageComponentInteraction) =>
-            collectorInteraction.user.id === (this.interaction as RepliableInteraction).user.id;
 
-        if (this.interaction instanceof Message) {
+        if (this.isInteraction()) {
             this.filter = (collectorInteraction: MessageComponentInteraction) =>
-                collectorInteraction.user.id === (this.interaction as Message).author.id;
+                collectorInteraction.user.id === this.interaction.user.id;
+        } 
+        else if (this.isMessage()) {
+            this.filter = (collectorInteraction: MessageComponentInteraction) =>
+                collectorInteraction.user.id === this.interaction.author.id;
         }
 
         // TODO: ADD A FILTER MESSAGE THING, there's indication,
@@ -119,11 +121,11 @@ export class Builder<T extends RepliableInteraction | Message> {
     }
 
     // Type Guards (because fuck ts)
-    protected isMessage(): boolean {
+    protected isMessage(): this is this & { interaction: Message } {
         return this.interaction instanceof Message;
     }
 
-    protected isInteraction(): boolean {
+    protected isInteraction(): this is this & { interaction: RepliableInteraction }{
         return this.interaction instanceof BaseInteraction;
     }
 }

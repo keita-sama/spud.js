@@ -193,13 +193,13 @@ export class PaginationBuilder<T extends RepliableInteraction | Message> extends
 
         let initialMessage;
         if (this.isMessage()) {
-            initialMessage = await (this.interaction as Message).reply(messagePayload);
+            initialMessage = await this.interaction.reply(messagePayload);
         } else if (this.isInteraction()) {
             if (this.interaction instanceof ButtonInteraction) {
                 const response = await this.interaction.reply({ ...messagePayload, withResponse: true });
                 initialMessage = response.resource?.message;
             } else {
-                initialMessage = await (this.interaction as RepliableInteraction).reply(messagePayload);
+                initialMessage = await this.interaction.reply(messagePayload);
             }
         } else throw new SpudJSError('Something fucking happened.');
 
