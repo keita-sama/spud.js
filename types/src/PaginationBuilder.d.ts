@@ -21,24 +21,24 @@ interface Page {
  * Represents a Pagination Instance
  * @class
  */
-export declare class PaginationBuilder extends Builder {
-    pages: Page[];
-    currentPage: number;
-    editableButtons: ButtonNames[];
-    trashBin: boolean;
-    fastSkip: boolean;
+export declare class PaginationBuilder<T extends RepliableInteraction | Message> extends Builder<T> {
+    private pages;
+    private currentPage;
+    private editableButtons;
+    private trashBin;
+    private fastSkip;
+    private deleteMessage;
     customComponents?: ActionRowBuilder<ButtonBuilder | AcceptedSelectBuilders>;
     customComponentHandler?: {
         onCollect?: (i: MessageComponentInteraction) => unknown;
         onEnd?: (collected?: ReadonlyCollection<any, any>, reason?: string, initialMessage?: Message) => unknown;
     };
-    deleteMessage: boolean;
     buttons: Record<ButtonNames, ButtonBuilder>;
     /**
      * Sets the interaction used to collect inputs.
      * @param interaction
      */
-    constructor(interaction: RepliableInteraction | Message);
+    constructor(interaction: T);
     /**
      * Sets the pages that will be used when paging.
      * @param pages
@@ -78,9 +78,9 @@ export declare class PaginationBuilder extends Builder {
      * @async
      */
     send(): Promise<void>;
-    private createPaginationComponents;
-    getPaginationButtons(): Record<ButtonNames, ButtonBuilder>;
-    createNavigation(): ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder>[];
+    protected createPaginationComponents(): ButtonBuilder[];
+    protected getPaginationButtons(): Record<ButtonNames, ButtonBuilder>;
+    private createNavigation;
     /**
      * @returns The current page's embed and components if it has any.
      */

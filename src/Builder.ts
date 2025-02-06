@@ -7,6 +7,7 @@ import {
     CollectorFilter,
     Interaction,
 } from "discord.js";
+import { SpudJSError } from "./errors/SpudJSError";
 
 interface InteractionOptions {
     type: "reply" | "send",
@@ -48,6 +49,7 @@ export class Builder<T extends RepliableInteraction | Message> {
             this.filter = (collectorInteraction: MessageComponentInteraction) =>
                 collectorInteraction.user.id === this.interaction.author.id;
         }
+        else throw new SpudJSError('Filter failed to be initialized!')
 
         // TODO: ADD A FILTER MESSAGE THING, there's indication,
         this.time = 15 * 1000; // 15 seconds default;
@@ -56,7 +58,6 @@ export class Builder<T extends RepliableInteraction | Message> {
     /**
      * Allows the response to mention the user
      * @param allowMention
-
      */
     setMention(allowMention: boolean = true): this {
         this.mention = allowMention;
@@ -65,7 +66,6 @@ export class Builder<T extends RepliableInteraction | Message> {
     /**
      * Determines whether this pagination instance can idle.
      * @param allowIdling
-
      */
     setIdle(allowIdling: boolean = true): this {
         this.idle = allowIdling;
@@ -74,7 +74,6 @@ export class Builder<T extends RepliableInteraction | Message> {
     /**
      * A validation function that runs everytime a buttons is clicked. Defaults to Author Filtering.
      * @param customFilter
-
      */
     setCustomFilter(customFilter: CollectorFilter<MessageComponentInteraction[]>): this {
         this.filter = customFilter;
@@ -83,7 +82,6 @@ export class Builder<T extends RepliableInteraction | Message> {
     /**
      * Sets the amount of time the collector can last. If idle is set, this will be passed as idle time instead.
      * @param time 
- 
      */
     setTime(time: number): this {
         this.time = time;
@@ -93,7 +91,6 @@ export class Builder<T extends RepliableInteraction | Message> {
     /**
      * Options for extra content to send in the accompanying message.
      * @param messageOptions - 
- 
      */
     setMesage(messageOptions: SafeMessageOptions): this {
         this.messageOptions = messageOptions;
@@ -103,7 +100,6 @@ export class Builder<T extends RepliableInteraction | Message> {
     /**
      * Determines the amount of times this collector can be used.
      * @param maxInteractions
- 
      */
     setMaxInteractions(maxInteractions: number): this {
         this.maxInteractions = maxInteractions;
@@ -113,7 +109,6 @@ export class Builder<T extends RepliableInteraction | Message> {
     /**
      * Options used to configure how the pagination will be handled if you are using slash command interactions.
      * @param interactionOptions
- 
      */
     setInteractionOptions(interactionOptions: InteractionOptions): this {
         this.interactionOptions = interactionOptions;
@@ -125,7 +120,7 @@ export class Builder<T extends RepliableInteraction | Message> {
         return this.interaction instanceof Message;
     }
 
-    protected isInteraction(): this is this & { interaction: RepliableInteraction }{
+    protected isInteraction(): this is this & { interaction: RepliableInteraction } {
         return this.interaction instanceof BaseInteraction;
     }
 }

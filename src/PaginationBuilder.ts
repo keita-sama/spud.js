@@ -50,18 +50,17 @@ are endless!
  * @class
  */
 export class PaginationBuilder<T extends RepliableInteraction | Message> extends Builder<T> {
-    pages: Page[];
-    currentPage: number;
-    editableButtons: ButtonNames[];
-    trashBin: boolean;
-    fastSkip: boolean;
+    private pages: Page[];
+    private currentPage: number;
+    private editableButtons: ButtonNames[];
+    private trashBin: boolean;
+    private fastSkip: boolean;
+    private deleteMessage: boolean;
     customComponents?: ActionRowBuilder<ButtonBuilder | AcceptedSelectBuilders>;
     customComponentHandler?: {
         onCollect?: (i: MessageComponentInteraction) => unknown;
         onEnd?: (collected?: ReadonlyCollection<any, any>, reason?: string, initialMessage?: Message) => unknown;
     };
-    deleteMessage: boolean;
-
     buttons: Record<ButtonNames, ButtonBuilder>;
     /**
      * Sets the interaction used to collect inputs.
@@ -138,7 +137,6 @@ export class PaginationBuilder<T extends RepliableInteraction | Message> extends
         return this;
     }
 
-    // TODO: FIX THE COLLECTION TYPE...maybe.
     /**
      * Sets the function used to handling custom components.
      * @param handler
@@ -248,6 +246,7 @@ export class PaginationBuilder<T extends RepliableInteraction | Message> extends
                 });
             }
         });
+
         collector.on('end', async (collected, reason) => {
             if (this.customComponentHandler?.onEnd) {
                 if (initialMessage instanceof Message) {
@@ -265,7 +264,7 @@ export class PaginationBuilder<T extends RepliableInteraction | Message> extends
         });
     }
 
-    private createPaginationComponents(): ButtonBuilder[] {
+    protected createPaginationComponents(): ButtonBuilder[] {
         const buttons = this.getPaginationButtons();
         const paginationComponents: ButtonBuilder[] = [];
 
@@ -281,7 +280,7 @@ export class PaginationBuilder<T extends RepliableInteraction | Message> extends
         return paginationComponents;
     }
 
-    getPaginationButtons(): Record<ButtonNames, ButtonBuilder> {
+    protected getPaginationButtons(): Record<ButtonNames, ButtonBuilder> {
         const totalPage = this.getPageCount();
         const currentPage = this.currentPage;
         const { trash, last, first, previous, next } = this.buttons;
@@ -297,7 +296,7 @@ export class PaginationBuilder<T extends RepliableInteraction | Message> extends
         return this.buttons;
     }
 
-    createNavigation() {
+    private createNavigation() {
         const navigation: ActionRowBuilder<AcceptedSelectBuilders | ButtonBuilder>[] = [];
 
         const paginationComponentsRow: ActionRowBuilder<ButtonBuilder> = new ActionRowBuilder();
