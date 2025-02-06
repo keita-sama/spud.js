@@ -16,7 +16,7 @@ import {
     MessageComponentInteraction,
     ReadonlyCollection,
     InteractionResponse,
-    ChannelType,
+    ChannelType
 } from 'discord.js';
 
 import { SpudJSError } from './errors/SpudJSError';
@@ -175,9 +175,7 @@ export class PaginationBuilder<T extends RepliableInteraction | Message> extends
     async send(): Promise<void> {
         const { filter, maxInteractions: max, time } = this;
 
-        if (
-            this.interaction.channel?.type === ChannelType.GroupDM
-        ) return;
+        if (this.interaction.channel?.type === ChannelType.GroupDM) return;
         let navigation = this.createNavigation();
         let totalPages = this.getPageCount();
 
@@ -221,7 +219,7 @@ export class PaginationBuilder<T extends RepliableInteraction | Message> extends
                 await i.update({ components: [] });
                 return collector.stop();
             } else if (i.customId) {
-                if (this.customComponentHandler?.onCollect) await this.customComponentHandler!.onCollect(i)
+                if (this.customComponentHandler?.onCollect) await this.customComponentHandler!.onCollect(i);
             }
             // TODO: trashBin implementation + collector end functions.
             navigation = this.createNavigation();
@@ -250,10 +248,9 @@ export class PaginationBuilder<T extends RepliableInteraction | Message> extends
         collector.on('end', async (collected, reason) => {
             if (this.customComponentHandler?.onEnd) {
                 if (initialMessage instanceof Message) {
-                    this.customComponentHandler?.onEnd(collected, reason, initialMessage)
-                }
-                else if (initialMessage instanceof InteractionResponse) {
-                    this.customComponentHandler?.onEnd(collected, reason, await initialMessage.fetch() as Message)
+                    this.customComponentHandler?.onEnd(collected, reason, initialMessage);
+                } else if (initialMessage instanceof InteractionResponse) {
+                    this.customComponentHandler?.onEnd(collected, reason, (await initialMessage.fetch()) as Message);
                 }
             }
             if (this.deleteMessage) {

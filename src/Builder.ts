@@ -5,16 +5,16 @@ import {
     BaseInteraction,
     MessageComponentInteraction,
     CollectorFilter,
-    Interaction,
-} from "discord.js";
-import { SpudJSError } from "./errors/SpudJSError";
+    Interaction
+} from 'discord.js';
+import { SpudJSError } from './errors/SpudJSError';
 
 interface InteractionOptions {
-    type: "reply" | "send",
+    type: 'reply' | 'send';
     filterMessage?: string;
 }
 
-type SafeMessageOptions = Omit<MessageReplyOptions, "embeds" | "components">;
+type SafeMessageOptions = Omit<MessageReplyOptions, 'embeds' | 'components'>;
 
 /**
  * Class representing the core. Implements standard methods.
@@ -44,12 +44,10 @@ export class Builder<T extends RepliableInteraction | Message> {
         if (this.isInteraction()) {
             this.filter = (collectorInteraction: MessageComponentInteraction) =>
                 collectorInteraction.user.id === this.interaction.user.id;
-        } 
-        else if (this.isMessage()) {
+        } else if (this.isMessage()) {
             this.filter = (collectorInteraction: MessageComponentInteraction) =>
                 collectorInteraction.user.id === this.interaction.author.id;
-        }
-        else throw new SpudJSError('Filter failed to be initialized!')
+        } else throw new SpudJSError('Filter failed to be initialized!');
 
         // TODO: ADD A FILTER MESSAGE THING, there's indication,
         this.time = 15 * 1000; // 15 seconds default;
@@ -81,7 +79,7 @@ export class Builder<T extends RepliableInteraction | Message> {
     }
     /**
      * Sets the amount of time the collector can last. If idle is set, this will be passed as idle time instead.
-     * @param time 
+     * @param time
      */
     setTime(time: number): this {
         this.time = time;
@@ -90,7 +88,7 @@ export class Builder<T extends RepliableInteraction | Message> {
 
     /**
      * Options for extra content to send in the accompanying message.
-     * @param messageOptions - 
+     * @param messageOptions -
      */
     setMesage(messageOptions: SafeMessageOptions): this {
         this.messageOptions = messageOptions;
