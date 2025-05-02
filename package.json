@@ -1,7 +1,8 @@
 {
   "name": "spud.js",
+  "description": "Pagination oriented library for discord.js",
   "module": "index.ts",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "type": "module",
   "main": "dist/mjs/index.js",
   "scripts": {
